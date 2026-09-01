@@ -1,0 +1,18 @@
+# Generic example — semantic layer attach (warehouse.mode: external).
+tenant_id: example-external
+warehouse:
+  mode: external
+  provider: postgres
+  external_dsn_ref: op://Narrowstack/example-external/WAREHOUSE_DSN
+semantics_ref: v0.1.0
+enabled_pipelines:
+  - example_rest
+allowlist_profile: default
+principals:
+  - id: example-admin
+    tier: leadership
+    metrics: ["*"]
+provider_mode: M0
+telemetry_grants: []
+control_plane:
+  enabled: false

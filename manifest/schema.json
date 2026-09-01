@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://narrowstack.dev/schemas/instance-manifest.schema.json",
+  "title": "Narrowstack Core Instance Manifest",
+  "description": "Per-tenant configuration commit that drives deploy/destroy/restore of a narrowstack-core instance. Deploy shape uses warehouse.mode only (no topology enum). See manifest/README.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tenant_id",
+    "warehouse",
+    "semantics_ref",
+    "enabled_pipelines",
+    "allowlist_profile",
+    "principals",
+    "provider_mode",
+    "telemetry_grants"
+  ],
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "Stable tenant slug — runtime identity for one Core instance.",
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+      "minLength": 2,
+      "maxLength": 63
+    },
+    "vm_size_class": {
+      "type": "string",
+      "description": "Cloud sizing token. Required when warehouse.mode is local.",
+      "minLength": 1
+    },
+    "warehouse": {
+      "type": "object",
+      "description": "Warehouse contract — local Postgres on VM or external attach.",
+      "additionalProperties": false,
+      "required": ["mode", "provider"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["local", "external"],
+          "description": "local = Postgres on VM; external = customer-owned warehouse via DSN."
+        },
+        "provider": {
+          "type": "string",
+          "description": "Warehouse engine. Default v1: postgres.",
+          "enum": ["postgres"]
+        },
+        "service": {
+          "type": "string",
+          "description": "Compose service name for local Postgres (mode=local).",
+          "minLength": 1
+        },
+        "volume": {
+          "type": "string",
+          "description": "Named docker volume backing local Postgres (mode=local).",
+          "minLength": 1
+        },
+        "external_dsn_ref": {
+          "$ref": "#/$defs/opRef",
+          "description": "op:// reference to external Postgres DSN (mode=external)."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "local" } } },
+          "then": { "required": ["service", "volume"] }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "external" } } },
+          "then": { "required": ["external_dsn_ref"] }
+        }
+      ]
+    },
+    "semantics_ref": {
+      "type": "string",
+      "description": "Git ref (tag, branch, or SHA) of the tenant private semantics repo.",
+      "minLength": 1
+    },
+    "semantics_template_version": {
+      "type": "string",
+      "description": "Optional semver of the OSS template forked from — drift detection.",
+      "minLength": 1
+    },
+    "enabled_pipelines": {
+      "type": "array",
+      "description": "Subset of dlt source names to load for this instance.",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "allowlist_profile": {
+      "type": "string",
+      "description": "Allowlist profile enforced at deploy gate.",
+      "enum": ["default", "internal"]
+    },
+    "principals": {
+      "type": "array",
+      "description": "ACL principals and metric allow-lists.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "tier", "metrics"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Stable principal identifier."
+          },
+          "tier": {
+            "type": "string",
+            "enum": ["leadership", "team", "agent"]
+          },
+          "metrics": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1,
+            "description": "Metric names or globs; use \"*\" for all shipped metrics."
+          }
+        }
+      }
+    },
+    "provider_mode": {
+      "type": "string",
+      "description": "Provider mode per the provider spec.",
+      "enum": ["M0", "M1", "M2", "M3"]
+    },
+    "telemetry_grants": {
+      "type": "array",
+      "description": "Explicit telemetry grants. Default [] = heartbeat-only posture.",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "control_plane": {
+      "type": "object",
+      "description": "Optional phone-home and remote ACL when customer opts in.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "phone_home_grants": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "acl_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "enum": ["local", "phone_home"] },
+        "policy_ref": {
+          "oneOf": [{ "$ref": "#/$defs/opRef" }, { "type": "null" }]
+        }
+      }
+    },
+    "backup": {
+      "type": "object",
+      "description": "Backup target + retention. Required when warehouse.mode is local.",
+      "additionalProperties": false,
+      "required": ["target_ref", "retention_days"],
+      "properties": {
+        "target_ref": {
+          "$ref": "#/$defs/opRef",
+          "description": "op:// reference to backup target."
+        },
+        "retention_days": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "volume_ceiling_gb": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Documented full-refresh volume ceiling."
+    },
+    "secrets_refs": {
+      "type": "object",
+      "description": "Logical secret name -> op:// path. Never contains values.",
+      "additionalProperties": { "$ref": "#/$defs/opRef" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "type": "object",
+        "properties": {
+          "warehouse": {
+            "type": "object",
+            "properties": { "mode": { "const": "local" } },
+            "required": ["mode"]
+          }
+        },
+        "required": ["warehouse"]
+      },
+      "then": { "required": ["vm_size_class", "backup"] }
+    }
+  ],
+  "$defs": {
+    "opRef": {
+      "type": "string",
+      "description": "1Password secret reference (op:// only).",
+      "pattern": "^op://[^/]+/[^/]+(/[^/]+)*$"
+    }
+  }
+}

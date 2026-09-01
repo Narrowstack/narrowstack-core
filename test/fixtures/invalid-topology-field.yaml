@@ -1,0 +1,22 @@
+# INVALID: topology enum removed — additionalProperties rejects unknown keys.
+tenant_id: bad-topology
+topology: T1
+vm_size_class: standard-4x16
+warehouse:
+  mode: local
+  provider: postgres
+  service: postgres
+  volume: pgdata
+semantics_ref: v0.1.0
+enabled_pipelines:
+  - example_rest
+allowlist_profile: default
+principals:
+  - id: admin
+    tier: leadership
+    metrics: ["*"]
+provider_mode: M0
+telemetry_grants: []
+backup:
+  target_ref: op://Narrowstack/bad/BACKUP_TARGET
+  retention_days: 30
