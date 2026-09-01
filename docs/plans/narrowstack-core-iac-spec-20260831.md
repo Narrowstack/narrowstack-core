@@ -14,6 +14,11 @@ refs:
   - ADR-003
 ---
 
+> **Superseded (2026-08-31)** — Canonical architecture:
+> [`narrowstack-core-architecture-20260831.md`](./narrowstack-core-architecture-20260831.md).
+> Retained for history only. Do not implement from this file — it predates headless v1
+> (D8), `warehouse.mode` without topology enums (D9), and removal of `app_ref`.
+
 # narrowstack-core — IaC + Core module implementation spec
 
 **Executive summary:** The proposed Core architecture (dlt → Postgres → dbt → MetricFlow → bounded agent → chat, one VM per customer, IaC as the Cloud interface) is **sound for v1** if scoped to the PRD's thinnest end-to-end slice. `narrowstack-core` becomes the **provisioning + runtime shell**; `narrowstack-semantics` stays the **data contract SSOT** until a second instance exists; `narrowstack-core-app` stays the **chat GUI** with manifest consumed as a build artifact, not a committed copy. Ship Wave 0 (repo bootstrap + allowlist CI) before any customer-facing deploy. Do not four-repo split until the MVP skeleton passes acceptance criteria in `core-prd.md`.
