@@ -62,7 +62,7 @@ test("local warehouse without backup is rejected", async () => {
   assert.equal(validate(data), false);
 });
 
-test("literal secret value (non op://) is rejected", async () => {
+test("invalid env var name rejected", async () => {
   const validate = await makeValidator();
   const data = await loadYaml(path.join(fixturesDir, "invalid-literal-secret.yaml"));
   assert.equal(validate(data), false);

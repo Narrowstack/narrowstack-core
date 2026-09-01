@@ -26,13 +26,13 @@ _Owner repo: narrowstack-core_
 |---|---|
 | ADR-003 | One VM, one warehouse volume per tenant |
 | D7 Coolify on Hetzner | Compose labels compatible with Cloud provisioner |
-| Secrets via op | `.env.tpl` + `op://`; no baked credentials |
+| Secrets via .env | `.env.example` → `.env`; no baked credentials |
 | Allowlist + ACL gates | green-check includes both before success |
 
 ## Data model / API delta
 
 - `compose/local-warehouse/docker-compose.yml`
-- `compose/local-warehouse/.env.tpl`
+- `compose/local-warehouse/.env.example`
 - `deploy/green-check.sh` integration
 - Manifest `warehouse.backup` required for local mode
 

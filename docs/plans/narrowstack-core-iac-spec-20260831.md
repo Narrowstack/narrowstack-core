@@ -102,9 +102,9 @@ refs:
 
 ### 5. Warehouse + secrets architecture
 
-**Recommendation:** **Customers: self-hosted Postgres in T1 compose on Cloud VM.** Dogfood: keep managed Postgres until restore drill completes, then migrate instance #2 to self-hosted to prove path. **Per-role credentials** via `.env.tpl` + `op://` references injected at provision time; manifest carries `op://` item refs, never values.
+**Recommendation:** **Customers: self-hosted Postgres in T1 compose on Cloud VM.** Dogfood: keep managed Postgres until restore drill completes, then migrate instance #2 to self-hosted to prove path. **Per-role credentials** via `.env` files; manifest carries env var names (e.g. `DLT_PG_PASSWORD`), never values.
 
-**Rationale:** ADR-003 + packaging spec §6. Single credential is survivable for builder-operated instance only. House secrets bright-line (2026-08-31) requires `op://` for new secrets.
+**Rationale:** ADR-003 + packaging spec §6. Single credential is survivable for builder-operated instance only. Secrets live in gitignored `.env` files at provision time.
 
 ---
 
@@ -182,7 +182,7 @@ narrowstack-core/
 ├── compose/
 │   ├── t1-full/
 │   │   ├── docker-compose.yml         # postgres, engine mount, app, proxy
-│   │   └── .env.tpl                   # op:// refs per role
+│   │   └── .env.example               # env vars per role
 │   └── t2-semantic/
 │       └── docker-compose.yml         # no local postgres; external DSN
 ├── scripts/
@@ -192,7 +192,7 @@ narrowstack-core/
 │   └── workflows/
 │       ├── ci.yml                     # manifest lint + schema validate
 │       └── allowlist-remote.yml       # triggers semantics allowlist on pin change
-└── .env.tpl.example                   # document op:// pattern for operators
+└── .env.example                       # document env var contract for operators
 ```
 
 **Not in v1 tree:** Terraform/Pulumi (defer to Cloud repo integration), copied dbt models, committed semantic manifest JSON.
@@ -208,23 +208,23 @@ narrowstack-core/
 | `tenant_id` | string | yes | Stable slug |
 | `topology` | `T1` \| `T2` | yes | Full VM vs attach |
 | `vm_size_class` | string | T1 | Cloud sizing token |
-| `warehouse` | object | yes | T1: local compose service; T2: external DSN via `op://` ref |
+| `warehouse` | object | yes | T1: local compose service; T2: external DSN via env var |
 | `semantics_ref` | string | yes | git ref of `narrowstack-semantics` |
 | `app_ref` | string | yes | git ref of `narrowstack-core-app` |
 | `enabled_pipelines` | string[] | yes | Subset of dlt sources |
 | `allowlist_profile` | string | yes | e.g. `customer-default`, `internal-dogfood` |
 | `provider_mode` | `M0`–`M3` | yes | Per provider spec |
 | `telemetry_grants` | string[] | yes | Default `[]` (T0) |
-| `backup` | object | T1 | Target + retention; `op://` ref |
+| `backup` | object | T1 | Target + retention; env var name |
 | `volume_ceiling_gb` | number | no | Documented full-refresh limit |
 
 Schema lives in `manifest/schema.json`; examples in `manifest/examples/`.
 
 ### Deploy topologies
 
-**T1 — Full instance:** Cloud provisions Ubuntu VM → core `deploy/green-check.sh` pulls compose → Postgres volume → clone semantics at pin → inject secrets via `op run` → run enabled pipelines → `dbt seed && dbt run && dbt parse` → allowlist gate → tie-out → smoke `mf query` → start app + proxy.
+**T1 — Full instance:** Cloud provisions Ubuntu VM → core `deploy/green-check.sh` pulls compose → Postgres volume → clone semantics at pin → load secrets from `.env` → run enabled pipelines → `dbt seed && dbt run && dbt parse` → allowlist gate → tie-out → smoke `mf query` → start app + proxy.
 
-**T2 — Semantic layer only:** No local Postgres container; manifest `warehouse.external_dsn_ref` points at customer Postgres; same transform/semantic/agent steps against external DSN; Cloud VM optional (may run on customer VPC with egress rules).
+**T2 — Semantic layer only:** No local Postgres container; manifest `warehouse.external_dsn_env` names env var holding customer Postgres DSN; same transform/semantic/agent steps against external DSN; Cloud VM optional (may run on customer VPC with egress rules).
 
 ### Green deploy checklist
 
@@ -262,7 +262,7 @@ Ordered gate (from packaging spec §7):
 - Git ref pins in manifest (`semantics_ref`, `app_ref`)
 - Allowlist profile name → semantics `allowlist/<profile>.yaml`
 - Build artifact: `semantic_manifest.json` generated in CI, consumed by app
-- Env contract: documented in `manifest/README.md` and compose `.env.tpl`
+- Env contract: documented in `manifest/README.md` and compose `.env.example`
 
 ---
 
@@ -308,20 +308,18 @@ flowchart LR
 
 ## Secrets approach
 
-Per house conventions (`dev-conventions.md` secrets bright-line):
-
 | Role | Credential | Injection |
 |---|---|---|
-| dlt loader | `PGUSER_dlt` | `op://Narrowstack/<tenant>-core/DLT_PG_PASSWORD` |
-| dbt | `PGUSER_dbt` | separate op field |
-| MetricFlow | `PGUSER_mf` | separate op field |
+| dlt loader | `PGUSER_dlt` | `DLT_PG_PASSWORD` env var |
+| dbt | `PGUSER_dbt` | separate env var |
+| MetricFlow | `PGUSER_mf` | separate env var |
 | app metadata routes | `PGUSER_app_ro` | SELECT-only |
 | agent/Hermes | `PGUSER_agent` | bounded scope |
-| source APIs | per-source tokens | `op://` per pipeline in manifest refs |
+| source APIs | per-source tokens | env var per pipeline in manifest refs |
 
-- **Committed:** `.env.tpl` with `op://` references only
-- **Manifest:** `secrets_refs` map — item paths, never values
-- **Provision:** `op run --env-file=.env.tpl -- deploy/green-check.sh`
+- **Committed:** `.env.example` with placeholder values only
+- **Manifest:** `secrets_refs` map — env var names, never values
+- **Provision:** copy `.env.example` → `.env`, fill values, run `deploy/green-check.sh`
 - **Touch-and-upgrade:** semantics `load_env.sh` legacy `.secrets/` flagged; migrate on first IaC touch
 
 ---
@@ -386,7 +384,7 @@ Nothing incomplete ships to `main`:
 2. **W1** — Add `allowlist/` to semantics, classification pass on 55 metrics / 31 dashboard / 9 seeds, CI gate — *reuses* packaging spec §5 deny list.
 3. **W1b** — Core `allowlist-gate.sh`; core-app drops committed manifest for CI-generated artifact — *reuses* consolidation drift fix.
 4. **W2** — T1 compose from rebuild recipe — *reuses* `core-architecture.md` manual steps.
-5. **W2b** — Per-role `.env.tpl` + op refs — *reuses* secrets bright-line.
+5. **W2b** — Per-role `.env` + manifest env refs
 6. **W3** — Provision instance #2 (internal entity), one entity key, green-check full path — *reuses* PRD skeleton steps 1–10.
 7. **W4** — T2 compose path — *reuses* T2 sold precedent.
 8. **W5** — Bounded-tool facade stub — *reuses* ADR-001, agent-tool-contract proposal.
@@ -395,7 +393,7 @@ Nothing incomplete ships to `main`:
 
 ```bash
 # After W3 on a Cloud VM:
-op run --env-file=compose/t1-full/.env.tpl -- ./deploy/green-check.sh manifest/examples/t1-dogfood.yaml
+./deploy/green-check.sh manifest/examples/example-local-warehouse.yaml
 ./deploy/destroy.sh manifest/examples/t1-dogfood.yaml
 ./deploy/restore.sh manifest/examples/t1-dogfood.yaml
 # Known question returns tie-out number; allowlist violation test fails in CI fixture
