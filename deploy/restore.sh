@@ -14,7 +14,7 @@ main() {
   local manifest="${1:-}"
   [ -n "${manifest}" ] || usage
 
-  echo "restore: TODO (W3) pull backup per manifest backup.target_ref"
+  echo "restore: TODO (W3) pull backup per manifest backup.target_env"
   echo "restore: TODO (W3) replay green-check steps 3-6"
   echo "restore: TODO (W3) verify known question returns known number"
   echo "restore: skeleton pass."

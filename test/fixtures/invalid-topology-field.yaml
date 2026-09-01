@@ -18,5 +18,5 @@ principals:
 provider_mode: M0
 telemetry_grants: []
 backup:
-  target_ref: op://Narrowstack/bad/BACKUP_TARGET
+  target_env: BACKUP_TARGET
   retention_days: 30

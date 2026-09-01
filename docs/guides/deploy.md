@@ -14,7 +14,7 @@ _Skeleton — filled during Phase B when scripts exist._
 ## Prerequisites
 
 - [ ] Valid tenant manifest (private semantics repo or example)
-- [ ] `op run --env-file=.env.tpl` configured
+- [ ] `.env` configured from `.env.example`
 - [ ] Cloud VM provisioned (Coolify / Hetzner)
 - [ ] Semantics repo access at pinned `semantics_ref`
 

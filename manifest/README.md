@@ -33,4 +33,5 @@ node scripts/lint-manifest.mjs path/to/manifest.yaml
 
 ## Secrets
 
-All secret values via `op://` references in manifest or `.env.tpl` — never literals.
+Manifest fields (`secrets_refs`, `backup.target_env`, `warehouse.external_dsn_env`) hold
+env var names only. Values belong in gitignored `.env` files — see `.env.example`.

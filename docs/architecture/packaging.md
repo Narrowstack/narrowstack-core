@@ -32,7 +32,7 @@ Compose paths: `compose/local-warehouse/`, `compose/external-warehouse/`. Concep
 One declarative manifest per tenant. Carries:
 
 - `tenant_id` — stable runtime slug (not repo name)
-- `warehouse` — mode, provider, backup (local), `external_dsn_ref` (external)
+- `warehouse` — mode, provider, backup (local), `external_dsn_env` (external)
 - `semantics_ref` — git ref of private semantics repo
 - `enabled_pipelines`, `allowlist_profile`, `principals`
 - `provider_mode` (M0–M3), `telemetry_grants` (default `[]`)
@@ -78,7 +78,7 @@ Three versioned interfaces move independently: tool contract, semantic contract,
 
 ## Secrets
 
-Per-role warehouse credentials (dlt, dbt, MetricFlow, app reader, agent) via `.env.tpl` + `op://` references. Never baked into images or manifest plaintext.
+Per-role warehouse credentials (dlt, dbt, MetricFlow, app reader, agent) via `.env` files (see `.env.example`). Manifest carries env var names only — never baked into images or manifest plaintext.
 
 ---
 

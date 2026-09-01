@@ -26,7 +26,7 @@ warehouse:
   provider: postgres
   service: postgres          # local only
   volume: pgdata             # local only
-  external_dsn_ref: op://... # external only
+  external_dsn_env: WAREHOUSE_DSN  # external only
   backup: { ... }            # required when local
 ```
 
