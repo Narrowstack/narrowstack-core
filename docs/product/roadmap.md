@@ -109,7 +109,7 @@ note: All phases proposed until Phase G8 sign-off. Waves W0–W6 may reorder wit
 **Kickoff prompt:** W2 needs Cloud VM provisioning (NRWSTK-901–909). Core consumes manifest; Cloud provisions substrate.
 
 - [ ] **TASK-014** — Author `compose/local-warehouse/docker-compose.yml`
-  Files: `compose/local-warehouse/docker-compose.yml`, `compose/local-warehouse/.env.tpl`
+  Files: `compose/local-warehouse/docker-compose.yml`, `compose/local-warehouse/.env.example`
   Notes: Postgres volume, dlt, dbt, MetricFlow services; per-role creds via op inject.
   Verify: `docker compose config` validates.
 
@@ -274,7 +274,7 @@ note: All phases proposed until Phase G8 sign-off. Waves W0–W6 may reorder wit
 
 - [ ] **TASK-041** — Author `compose/external-warehouse/docker-compose.yml`
   Files: `compose/external-warehouse/`
-  Notes: `warehouse.mode: external`; DSN via `op://`; no local Postgres service.
+  Notes: `warehouse.mode: external`; DSN via `WAREHOUSE_DSN` env var; no local Postgres service.
   Verify: Green-check passes against external Postgres fixture.
 
 - [ ] **TASK-042** — Document warehouse contract for external attach

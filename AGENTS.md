@@ -24,7 +24,7 @@ IaC shell for headless Core v1 — manifest schema, deploy gates, semantics temp
 ## Key conventions
 
 - **Manifest:** `warehouse.mode` only — no topology enum, no `app_ref`.
-- **Secrets:** `op://` references only; never literals in manifest or commits.
+- **Secrets:** env var names in manifest; values in gitignored `.env` files only.
 - **Commits:** `tucker@narrowstack.com`.
 
 ## Doc homes
