@@ -187,9 +187,9 @@ Criteria drawn from the architecture spec (deploy pipeline, rollback, fleet ops,
 
 | Topic | RFC | Status |
 |---|---|---|
-| Semantics delivery (clone vs artifact) | `operating system/docs/rfc/rfc-005-semantics-delivery.md` | Draft |
-| Metric ACL + phone-home remote policy | `operating system/docs/rfc/rfc-006-metric-acl-remote-policy.md` | Draft |
-| Headless surface / deprecate core-app | `operating system/docs/rfc/rfc-007-headless-core-surface.md` | Draft |
+| Semantics delivery (clone vs artifact) | `operating system/docs/rfc/rfc-004-semantics-delivery.md` | Draft |
+| Metric ACL + phone-home remote policy | `operating system/docs/rfc/rfc-005-metric-acl-phone-home.md` | Draft |
+| Headless surface / deprecate core-app | `operating system/docs/rfc/rfc-006-headless-surface.md` | Draft |
 | Semantics repo ownership | Covered in this critique; optional RFC if enterprise customers appear before W3 | Deferred |
 
 ---
