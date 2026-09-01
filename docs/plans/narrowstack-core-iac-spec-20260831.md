@@ -2,9 +2,10 @@
 kind: plan
 slug: narrowstack-core-iac-spec
 date: 2026-08-31
-status: draft
+status: superseded
 epic: null
 supersedes: null
+superseded_by: narrowstack-core-architecture-20260831
 refs:
   - operating system/working/core-packaging-spec.md
   - operating system/working/core-prd.md
