@@ -13,6 +13,15 @@ note: Canonical Linear state after G7 review. See docs/reviews/govern-linear-rev
 
 Titles are outcome-shaped. Phase/wave (G0–G8, W0–W6) lives in descriptions only.
 
+## Milestones
+
+| Milestone | Phase / wave | Linked epics & issues | URL |
+|---|---|---|---|
+| Architecture governing stack | G (dry run) | OS-395 | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/architecture-governing-stack-41cfa014 |
+| Core instance for Narrowstack | W0–W5 (dogfood) | OS-396–401, OS-403–409, OS-411 | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/core-instance-for-narrowstack-5a1c315f |
+| External warehouse and legacy fit | W6 (deferred) | OS-402, OS-410 | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/external-warehouse-and-legacy-fit-a69d1154 |
+| Customer stack migration | Post-W4 (TBD) | — (related: [NRWSTK-1261](https://linear.app/narrowstack/issue/NRWSTK-1261)) | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/customer-stack-migration-8faca931 |
+
 ## Govern epic
 
 | ID | Title | Status | URL |
