@@ -1,0 +1,18 @@
+# INVALID: local warehouse requires backup block.
+tenant_id: bad-no-backup
+vm_size_class: standard-4x16
+warehouse:
+  mode: local
+  provider: postgres
+  service: postgres
+  volume: pgdata
+semantics_ref: v0.1.0
+enabled_pipelines:
+  - example_rest
+allowlist_profile: default
+principals:
+  - id: admin
+    tier: leadership
+    metrics: ["*"]
+provider_mode: M0
+telemetry_grants: []

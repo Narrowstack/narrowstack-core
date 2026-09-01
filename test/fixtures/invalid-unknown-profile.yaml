@@ -1,0 +1,16 @@
+# INVALID: allowlist_profile must be default or internal.
+tenant_id: bad-profile
+warehouse:
+  mode: external
+  provider: postgres
+  external_dsn_env: WAREHOUSE_DSN
+semantics_ref: v0.1.0
+enabled_pipelines:
+  - example_rest
+allowlist_profile: ship-everything
+principals:
+  - id: admin
+    tier: leadership
+    metrics: ["*"]
+provider_mode: M1
+telemetry_grants: []

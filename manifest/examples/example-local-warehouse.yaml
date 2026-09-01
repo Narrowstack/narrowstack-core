@@ -1,0 +1,36 @@
+# Generic example — full instance (warehouse.mode: local).
+# Tenant-specific manifests belong in the private semantics repo deploy/manifest.yaml.
+tenant_id: example
+vm_size_class: standard-4x16
+warehouse:
+  mode: local
+  provider: postgres
+  service: postgres
+  volume: pgdata
+semantics_ref: v0.1.0
+semantics_template_version: "0.1.0"
+enabled_pipelines:
+  - example_rest
+allowlist_profile: default
+principals:
+  - id: example-admin
+    tier: leadership
+    metrics: ["*"]
+  - id: example-team
+    tier: team
+    metrics: ["revenue_*"]
+provider_mode: M0
+telemetry_grants: []
+control_plane:
+  enabled: false
+  phone_home_grants: []
+backup:
+  target_env: BACKUP_TARGET
+  retention_days: 30
+volume_ceiling_gb: 50
+secrets_refs:
+  dlt_pg_password: DLT_PG_PASSWORD
+  dbt_pg_password: DBT_PG_PASSWORD
+  mf_pg_password: MF_PG_PASSWORD
+  api_ro_pg_password: API_RO_PG_PASSWORD
+  agent_pg_password: AGENT_PG_PASSWORD

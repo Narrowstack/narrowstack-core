@@ -1,0 +1,4 @@
+{
+  "name": "narrowstack-core",
+  "install": "npm ci"
+}
