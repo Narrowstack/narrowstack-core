@@ -63,11 +63,13 @@ Run the deploy gate (scripts may be stubs until the matching build wave lands):
 
 ## Secrets
 
-Committed env templates and manifests carry **`op://` references only**, never literal
-secret values. Resolve at provision time:
+Manifests reference **env var names** (e.g. `DLT_PG_PASSWORD`); values live in `.env`
+files that are gitignored. Copy from `.env.example`:
 
 ```bash
-op run --env-file=compose/local-warehouse/.env.tpl -- ./deploy/green-check.sh manifest/examples/example-local-warehouse.yaml
+cp .env.example .env
+cp compose/local-warehouse/.env.example compose/local-warehouse/.env
+./deploy/green-check.sh manifest/examples/example-local-warehouse.yaml
 ```
 
-See [`manifest/README.md`](manifest/README.md) and `.env.tpl.example`.
+See [`manifest/README.md`](manifest/README.md) and `.env.example`.

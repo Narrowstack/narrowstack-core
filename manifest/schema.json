@@ -54,9 +54,9 @@
           "description": "Named docker volume backing local Postgres (mode=local).",
           "minLength": 1
         },
-        "external_dsn_ref": {
-          "$ref": "#/$defs/opRef",
-          "description": "op:// reference to external Postgres DSN (mode=external)."
+        "external_dsn_env": {
+          "$ref": "#/$defs/envRef",
+          "description": "Env var name holding external Postgres DSN (mode=external)."
         }
       },
       "allOf": [
@@ -66,7 +66,7 @@
         },
         {
           "if": { "properties": { "mode": { "const": "external" } } },
-          "then": { "required": ["external_dsn_ref"] }
+          "then": { "required": ["external_dsn_env"] }
         }
       ]
     },
@@ -148,8 +148,8 @@
       "additionalProperties": false,
       "properties": {
         "source": { "type": "string", "enum": ["local", "phone_home"] },
-        "policy_ref": {
-          "oneOf": [{ "$ref": "#/$defs/opRef" }, { "type": "null" }]
+        "policy_env": {
+          "oneOf": [{ "$ref": "#/$defs/envRef" }, { "type": "null" }]
         }
       }
     },
@@ -157,11 +157,11 @@
       "type": "object",
       "description": "Backup target + retention. Required when warehouse.mode is local.",
       "additionalProperties": false,
-      "required": ["target_ref", "retention_days"],
+      "required": ["target_env", "retention_days"],
       "properties": {
-        "target_ref": {
-          "$ref": "#/$defs/opRef",
-          "description": "op:// reference to backup target."
+        "target_env": {
+          "$ref": "#/$defs/envRef",
+          "description": "Env var name holding backup target."
         },
         "retention_days": {
           "type": "integer",
@@ -176,8 +176,8 @@
     },
     "secrets_refs": {
       "type": "object",
-      "description": "Logical secret name -> op:// path. Never contains values.",
-      "additionalProperties": { "$ref": "#/$defs/opRef" }
+      "description": "Logical secret name -> env var name. Never contains values.",
+      "additionalProperties": { "$ref": "#/$defs/envRef" }
     }
   },
   "allOf": [
@@ -197,10 +197,10 @@
     }
   ],
   "$defs": {
-    "opRef": {
+    "envRef": {
       "type": "string",
-      "description": "1Password secret reference (op:// only).",
-      "pattern": "^op://[^/]+/[^/]+(/[^/]+)*$"
+      "description": "Environment variable name for secret injection.",
+      "pattern": "^[A-Z][A-Z0-9_]*$"
     }
   }
 }

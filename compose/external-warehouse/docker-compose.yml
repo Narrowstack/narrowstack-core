@@ -1,5 +1,5 @@
 # external-warehouse — semantic layer attach compose template (W6 skeleton).
-# No local Postgres; connects to customer warehouse via external_dsn_ref from manifest.
+# No local Postgres; connects to customer warehouse via external_dsn_env from manifest.
 name: ns-core-external-warehouse
 
 services:

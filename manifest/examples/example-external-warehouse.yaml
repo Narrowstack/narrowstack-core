@@ -3,7 +3,7 @@ tenant_id: example-external
 warehouse:
   mode: external
   provider: postgres
-  external_dsn_ref: op://Narrowstack/example-external/WAREHOUSE_DSN
+  external_dsn_env: WAREHOUSE_DSN
 semantics_ref: v0.1.0
 enabled_pipelines:
   - example_rest

@@ -1,6 +1,6 @@
 # local-warehouse — full instance compose template (W2 skeleton).
 # Postgres runs on the Cloud VM. Semantics engine and modeling API mount pinned refs.
-# Secrets via `op run --env-file=.env.tpl` (op:// references only).
+# Secrets via --env-file .env (copy from .env.example).
 name: ns-core-local-warehouse
 
 services:
@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: ${PG_DATABASE:-narrowstack}
       POSTGRES_USER: ${PG_SUPERUSER:-postgres}
-      POSTGRES_PASSWORD: ${PG_SUPERUSER_PASSWORD:?set via op run}
+      POSTGRES_PASSWORD: ${PG_SUPERUSER_PASSWORD:?set in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
