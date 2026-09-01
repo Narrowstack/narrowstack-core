@@ -1,0 +1,28 @@
+# T1 — Full instance (internal dogfood, second instance).
+# Postgres runs as a local compose service on a Cloud VM.
+tenant_id: ns-dogfood
+topology: T1
+vm_size_class: standard-4x16
+warehouse:
+  mode: local
+  service: postgres
+  volume: pgdata
+semantics_ref: v0.1.0
+app_ref: v0.1.0
+enabled_pipelines:
+  - harvest
+  - stripe
+  - hubspot
+allowlist_profile: internal-dogfood
+provider_mode: M0
+telemetry_grants: []
+backup:
+  target_ref: op://Narrowstack/ns-dogfood-core/BACKUP_TARGET
+  retention_days: 30
+volume_ceiling_gb: 50
+secrets_refs:
+  dlt_pg_password: op://Narrowstack/ns-dogfood-core/DLT_PG_PASSWORD
+  dbt_pg_password: op://Narrowstack/ns-dogfood-core/DBT_PG_PASSWORD
+  mf_pg_password: op://Narrowstack/ns-dogfood-core/MF_PG_PASSWORD
+  app_ro_pg_password: op://Narrowstack/ns-dogfood-core/APP_RO_PG_PASSWORD
+  agent_pg_password: op://Narrowstack/ns-dogfood-core/AGENT_PG_PASSWORD

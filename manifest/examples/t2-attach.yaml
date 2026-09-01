@@ -1,0 +1,16 @@
+# T2 — Semantic layer only, attached to a customer-owned external Postgres.
+# No local Postgres container; warehouse DSN comes from an op:// reference.
+tenant_id: acme-attach
+topology: T2
+warehouse:
+  mode: external
+  external_dsn_ref: op://Narrowstack/acme-attach-core/WAREHOUSE_DSN
+semantics_ref: v0.1.0
+app_ref: v0.1.0
+enabled_pipelines:
+  - harvest
+allowlist_profile: customer-default
+provider_mode: M1
+telemetry_grants: []
+secrets_refs:
+  agent_pg_password: op://Narrowstack/acme-attach-core/AGENT_PG_PASSWORD

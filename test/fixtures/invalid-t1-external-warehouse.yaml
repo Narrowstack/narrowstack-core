@@ -1,0 +1,17 @@
+# INVALID: T1 must use a local warehouse, not an external one.
+tenant_id: bad-external
+topology: T1
+vm_size_class: standard-4x16
+warehouse:
+  mode: external
+  external_dsn_ref: op://Narrowstack/bad/WAREHOUSE_DSN
+semantics_ref: v0.1.0
+app_ref: v0.1.0
+enabled_pipelines:
+  - harvest
+allowlist_profile: internal-dogfood
+provider_mode: M0
+telemetry_grants: []
+backup:
+  target_ref: op://Narrowstack/bad/BACKUP_TARGET
+  retention_days: 30

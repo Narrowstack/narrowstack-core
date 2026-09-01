@@ -1,0 +1,26 @@
+name: allowlist-remote
+
+# When the pinned narrowstack-semantics ref changes in a manifest, re-run the
+# allowlist verifier against that ref. Wave 0: skeleton trigger + placeholder.
+# The actual checkout + verifier invocation is wired in W1 once
+# narrowstack-semantics ships allowlist/<profile>.yaml and
+# scripts/check-allowlist.py.
+
+on:
+  pull_request:
+    paths:
+      - "manifest/**"
+
+jobs:
+  allowlist:
+    name: allowlist gate (pinned semantics ref)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run allowlist gate (skeleton)
+        run: |
+          for m in manifest/examples/*.yaml; do
+            echo "::group::allowlist gate for ${m}"
+            ./deploy/allowlist-gate.sh "${m}"
+            echo "::endgroup::"
+          done

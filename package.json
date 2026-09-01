@@ -1,0 +1,22 @@
+{
+  "name": "narrowstack-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Narrowstack Core — IaC + runtime shell: instance manifest schema, deploy gate, and compose templates.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "ns-lint-manifest": "scripts/lint-manifest.mjs"
+  },
+  "scripts": {
+    "lint:manifest": "node scripts/lint-manifest.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.6.1"
+  }
+}

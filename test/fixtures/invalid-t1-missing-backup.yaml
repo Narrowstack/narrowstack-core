@@ -1,0 +1,14 @@
+# INVALID: T1 requires a backup block; this omits it.
+tenant_id: bad-no-backup
+topology: T1
+vm_size_class: standard-4x16
+warehouse:
+  mode: local
+  service: postgres
+semantics_ref: v0.1.0
+app_ref: v0.1.0
+enabled_pipelines:
+  - harvest
+allowlist_profile: internal-dogfood
+provider_mode: M0
+telemetry_grants: []

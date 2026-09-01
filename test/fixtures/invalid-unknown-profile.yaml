@@ -1,0 +1,13 @@
+# INVALID: allowlist_profile must be one of the known profiles.
+tenant_id: bad-profile
+topology: T2
+warehouse:
+  mode: external
+  external_dsn_ref: op://Narrowstack/bad/WAREHOUSE_DSN
+semantics_ref: v0.1.0
+app_ref: v0.1.0
+enabled_pipelines:
+  - harvest
+allowlist_profile: ship-everything
+provider_mode: M1
+telemetry_grants: []

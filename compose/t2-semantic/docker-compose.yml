@@ -1,0 +1,15 @@
+# T2 — Semantic-layer-only compose template (Wave 0 skeleton).
+# No local Postgres: the warehouse is a customer-owned external DSN provided via
+# an op:// reference in the manifest. Same transform/semantic/agent steps run
+# against the external warehouse.
+name: ns-core-t2
+
+services:
+  # TODO (W4): semantics engine (dbt + MetricFlow) pointing at ${WAREHOUSE_DSN}.
+  # TODO (W4): app (narrowstack-core-app) consuming the generated semantic
+  #            manifest artifact against the external warehouse.
+  placeholder:
+    image: busybox:1.36
+    command: ["sh", "-c", "echo 'ns-core T2 skeleton — services wired in W4' && sleep infinity"]
+    environment:
+      WAREHOUSE_DSN: ${WAREHOUSE_DSN:?set via op run from manifest external_dsn_ref}

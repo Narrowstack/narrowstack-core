@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://narrowstack.dev/schemas/instance-manifest.schema.json",
+  "title": "Narrowstack Core Instance Manifest",
+  "description": "Per-tenant configuration commit that drives deploy/destroy/restore of a narrowstack-core instance. See manifest/README.md for the field reference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tenant_id",
+    "topology",
+    "warehouse",
+    "semantics_ref",
+    "app_ref",
+    "enabled_pipelines",
+    "allowlist_profile",
+    "provider_mode",
+    "telemetry_grants"
+  ],
+  "properties": {
+    "tenant_id": {
+      "type": "string",
+      "description": "Stable tenant slug used to name resources and secret paths.",
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+      "minLength": 2,
+      "maxLength": 63
+    },
+    "topology": {
+      "type": "string",
+      "description": "T1 = full VM with local Postgres; T2 = semantic layer attached to external warehouse.",
+      "enum": ["T1", "T2"]
+    },
+    "vm_size_class": {
+      "type": "string",
+      "description": "Cloud sizing token. Required for T1.",
+      "minLength": 1
+    },
+    "warehouse": {
+      "type": "object",
+      "description": "Warehouse binding. T1 uses a local compose service; T2 attaches to an external DSN via an op:// reference.",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["local", "external"],
+          "description": "local => Postgres runs as a compose service on the VM; external => attach to a customer-owned Postgres."
+        },
+        "service": {
+          "type": "string",
+          "description": "Compose service name for the local Postgres (mode=local).",
+          "minLength": 1
+        },
+        "volume": {
+          "type": "string",
+          "description": "Named docker volume backing local Postgres (mode=local).",
+          "minLength": 1
+        },
+        "external_dsn_ref": {
+          "$ref": "#/$defs/opRef",
+          "description": "op:// reference to the external Postgres DSN (mode=external)."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "local" } } },
+          "then": { "required": ["service"] }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "external" } } },
+          "then": { "required": ["external_dsn_ref"] }
+        }
+      ]
+    },
+    "semantics_ref": {
+      "type": "string",
+      "description": "Git ref (tag, branch, or SHA) of narrowstack-semantics to pin.",
+      "minLength": 1
+    },
+    "app_ref": {
+      "type": "string",
+      "description": "Git ref (tag, branch, or SHA) of narrowstack-core-app to pin.",
+      "minLength": 1
+    },
+    "enabled_pipelines": {
+      "type": "array",
+      "description": "Subset of dlt source names to load for this instance.",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "allowlist_profile": {
+      "type": "string",
+      "description": "Name of the allowlist profile enforced at the deploy gate (maps to narrowstack-semantics allowlist/<profile>.yaml).",
+      "enum": ["internal-dogfood", "customer-default"]
+    },
+    "provider_mode": {
+      "type": "string",
+      "description": "Provider mode per the provider spec.",
+      "enum": ["M0", "M1", "M2", "M3"]
+    },
+    "telemetry_grants": {
+      "type": "array",
+      "description": "Explicit telemetry grants. Default [] means T0 (no telemetry active).",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "backup": {
+      "type": "object",
+      "description": "Backup target + retention. Required for T1.",
+      "additionalProperties": false,
+      "required": ["target_ref", "retention_days"],
+      "properties": {
+        "target_ref": {
+          "$ref": "#/$defs/opRef",
+          "description": "op:// reference to the backup target (bucket/DSN + credentials)."
+        },
+        "retention_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Backup retention window in days."
+        }
+      }
+    },
+    "volume_ceiling_gb": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Documented full-refresh volume ceiling. Optional."
+    },
+    "secrets_refs": {
+      "type": "object",
+      "description": "Map of logical secret name -> op:// item path. Never contains values.",
+      "additionalProperties": { "$ref": "#/$defs/opRef" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "topology": { "const": "T1" } } },
+      "then": {
+        "required": ["vm_size_class", "backup"],
+        "properties": {
+          "warehouse": {
+            "type": "object",
+            "properties": { "mode": { "const": "local" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "topology": { "const": "T2" } } },
+      "then": {
+        "properties": {
+          "warehouse": {
+            "type": "object",
+            "properties": { "mode": { "const": "external" } }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "opRef": {
+      "type": "string",
+      "description": "1Password secret reference. Must be an op:// path, never a literal value.",
+      "pattern": "^op://[^/]+/[^/]+(/[^/]+)*$"
+    }
+  }
+}
