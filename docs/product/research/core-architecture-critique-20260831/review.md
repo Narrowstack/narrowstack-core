@@ -6,9 +6,9 @@ status: draft
 verified: 2026-08-31
 refs:
   - docs/plans/narrowstack-core-architecture-20260831.md
-  - operating system/docs/rfc/rfc-005-semantics-delivery.md
-  - operating system/docs/rfc/rfc-006-metric-acl-remote-policy.md
-  - operating system/docs/rfc/rfc-007-headless-core-surface.md
+  - operating system/docs/rfc/rfc-004-semantics-delivery.md
+  - operating system/docs/rfc/rfc-005-metric-acl-phone-home.md
+  - operating system/docs/rfc/rfc-006-headless-surface.md
   - ADR-001
   - ADR-003
 ---
@@ -17,7 +17,7 @@ refs:
 
 **Executive verdict:** The Phase G architecture (core as OSS IaC shell, per-tenant private semantics repo, `semantics_ref` pin, three-layer ACL, headless v1 surface, one VM per customer) is **directionally sound** and matches ADR-003, the packaging spec, and working dogfood evidence. **Ship v1 with git clone at deploy** — lowest cost, honest rollback, sufficient for fleet sizes under ~20 instances. **Do not** treat clone-at-deploy as permanent; define the v2 artifact trigger now. **Repo ownership default (Narrowstack-owned private semantics)** is correct for MSP; document enterprise escape hatches without building them in W0–W3. **Legacy Airbyte sites stay on a parallel track** until W4 dogfood passes; sufficiency probe is evidence, not migration commitment.
 
-**Linear:** NS-2 Core · **RFCs:** RFC-005, RFC-006, RFC-007 (draft)
+**Linear:** NS-2 Core · **RFCs:** RFC-004, RFC-005, RFC-006 (draft)
 
 ---
 
@@ -49,7 +49,7 @@ At deploy, `green-check.sh` clones the tenant's private semantics repo at `manif
 1. **Manifest requires SHA or annotated tag** — schema documents that floating branch refs are invalid in production manifests; CI lints manifest before deploy.
 2. **`clone-semantics.sh` — shallow, no history** — `--depth 1` at pinned ref; document offline mirror path for enterprise (deferred build).
 3. **Record `semantics_template_version`** in manifest (already in spec) and fail green-check on major template drift without explicit override.
-4. **Define v2 trigger in RFC-005** — e.g. fleet >15 instances, first enterprise air-gap requirement, or first failed deploy attributable to git host outage. Do not defer the trigger definition.
+4. **Define v2 trigger in RFC-004** — e.g. fleet >15 instances, first enterprise air-gap requirement, or first failed deploy attributable to git host outage. Do not defer the trigger definition.
 5. **Protect tenant repo tags** — branch protection on `v*` tags in Narrowstack-owned semantics repos; customer-owned repos get a checklist item, not enforcement code.
 
 ---
@@ -86,7 +86,7 @@ Seven live bespoke implementations — predominantly **Airbyte + dbt + Postgres*
 
 - **Correct non-goal** — full migration of all seven in v1 would collapse Phase G into a services project.
 - **Sufficiency assessment before commitment** — inventory → gap matrix → fit probe on 1–2 sites → per-customer verdict (migrate / coexist / retain) is the right evidence shape.
-- **T2 precedent** — semantic-layer attach (`warehouse.mode: external`) matches sites that already own Snowflake/ClickHouse; does not force rip-and-replace ingestion on day one.
+- **Semantic layer attach precedent** — `warehouse.mode: external` matches sites that already own Snowflake/ClickHouse; does not force rip-and-replace ingestion on day one.
 
 ### Adversarial concerns
 
@@ -96,7 +96,7 @@ Seven live bespoke implementations — predominantly **Airbyte + dbt + Postgres*
 | **Ingestion mismatch** | High | Dogfood is dlt; six of seven sites are Airbyte. Core v1 does not include Airbyte in `narrowstack-core`. |
 | **Warehouse heterogeneity** | Medium | Ally (Snowflake + N8N for ADP), Bulldog (ClickHouse) — external warehouse adapters deferred W6+. |
 | **Max as single maintainer** | High | Fleet ops burden if every site migrates; probe must include operational cost, not just technical fit. |
-| **Commercial promise risk** | Medium | T2 sold once; assuming all seven can attach semantics without ingestion change is unproven. |
+| **Commercial promise risk** | Medium | Semantic layer attach sold once; assuming all seven can attach semantics without ingestion change is unproven. |
 
 ### Recommended changes
 
@@ -123,7 +123,7 @@ Seven live bespoke implementations — predominantly **Airbyte + dbt + Postgres*
 | **Fork drift** | High | Tenants stop merging template fixes; security patches in OSS template do not flow automatically. |
 | **Allowlist bypass via macro/jinja** | Medium | Adversarial dbt can hide models; need static analysis beyond model name list. |
 | **Metric ACL without per-role warehouse creds** | Critical | Bounded API is theater if one Postgres password backs all roles (known gap in current-state secrets). |
-| **Phone-home ACL push** | Medium | Remote policy is convenient for MSP; local kill-switch must win (spec says so — RFC-006 must harden). |
+| **Phone-home ACL push** | Medium | Remote policy is convenient for MSP; local kill-switch must win (spec says so — RFC-005 must harden). |
 | **OSS boundary creep** | Medium | Pressure to ship "one more example" that leaks bonus patterns into template. |
 
 ### Recommended changes
@@ -153,7 +153,7 @@ Criteria drawn from the architecture spec (deploy pipeline, rollback, fleet ops,
 
 **Scale:** 1 = poor fit, 5 = excellent fit.
 
-**Interpretation:** Git clone wins v1 on cost and rollback. Signed OCI closes the gap on immutability and fleet push — adopt as v2 when trigger fires (RFC-005). Submodules and unsigned registry images are worse than clone for this architecture; submodules violate D5 and couple repos; unsigned registry adds infra without provenance.
+**Interpretation:** Git clone wins v1 on cost and rollback. Signed OCI closes the gap on immutability and fleet push — adopt as v2 when trigger fires (RFC-004). Submodules and unsigned registry images are worse than clone for this architecture; submodules violate D5 and couple repos; unsigned registry adds infra without provenance.
 
 ---
 
@@ -174,9 +174,11 @@ Criteria drawn from the architecture spec (deploy pipeline, rollback, fleet ops,
 |---|---|---|
 | No allowlist in production path | Default-deny YAML + deploy gate | W1 |
 | Single warehouse credential | Per-role creds via `op://` | W1 |
-| OS-338 / Stackflow misalignment | G7 Linear reconcile | G7 |
+| OS-338 / Stackflow misalignment | G7 Linear reconcile; split dogfood vs client-delivery | G7 |
+| NRWSTK-945 core webapp | Cancel or reparent; replace with modeling API (W5) per RFC-006 | G7 |
 | Tag mutability | SHA or protected tags in manifest | W0 schema |
-| Git host dependency at deploy | Shallow clone; v2 artifact trigger | W0 / RFC-005 |
+| Git host dependency at deploy | Shallow clone; v2 artifact trigger | W0 / RFC-004 |
+| Semantics fork drift | `semantics_template_version` + merge workflow (W3+) | W3 |
 | Entity layer / company-split in dogfood | Skeleton scope per PRD; not architecture blocker | W4 |
 
 ---

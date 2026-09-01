@@ -1,51 +1,73 @@
 # narrowstack-core
 
-Provisioning and runtime shell for Narrowstack Core — IaC, compose, deploy gates, semantics templates, and ACL machinery.
+**Provisioning and runtime shell** for headless Core v1: instance manifest schema, deploy
+gates, semantics templates, and ACL machinery. Core makes the stack **reproducible**;
+proprietary pipelines and metrics live in per-tenant private semantics repos pinned via
+`semantics_ref`.
 
-**Status:** Phase G (Govern) — documentation and specs; Phase B (Build) gated on G8 sign-off.
+Canonical architecture:
+[`docs/plans/narrowstack-core-architecture-20260831.md`](docs/plans/narrowstack-core-architecture-20260831.md).
+Phase **G (Govern)** docs land before Phase **B (Build)**.
 
-## What this repo is
+Substrate: Coolify on Hetzner VPS. One VM per customer (ADR-003).
 
-| In scope | Out of scope |
+## Sibling repos
+
+| Repo | Role |
 |---|---|
-| Manifest schema + generic examples | Tenant-specific manifests |
-| Deploy/rollback scripts | Proprietary pipelines/metrics |
-| `semantics/` OSS templates | Live NS payroll/bonus models |
-| ACL framework | Admin plane receiver |
-| `ns-core` CLI + modeling API stubs | `narrowstack-core-app` (deprecated) |
+| Private semantics repo per tenant | Data contract: dlt, dbt + MetricFlow, allowlist profiles, `deploy/manifest.yaml` |
+| Narrowstack Cloud | VM provision, substrate, backup target |
 
-**Architecture:** [docs/plans/narrowstack-core-architecture-20260831.md](docs/plans/narrowstack-core-architecture-20260831.md)
+Headless v1 product surface: modeling API + `ns-core` CLI on the VM.
+`narrowstack-core-app` is **deprecated**; no `app_ref` in the instance manifest.
 
-## Quick links
+## Repository layout
 
-| Doc | Path |
-|---|---|
-| PRD | [docs/product/prd.md](docs/product/prd.md) |
-| Roadmap | [docs/product/roadmap.md](docs/product/roadmap.md) |
-| Overview | [docs/architecture/overview.md](docs/architecture/overview.md) |
-| Features | [docs/features/](docs/features/) |
-| Guides | [docs/guides/](docs/guides/) |
-
-## Linear
-
-**Project:** Narrowstack Core (Stackflow) — retarget in G7 to dogfood IaC track.
-
-**Cloud agent:** `@cursor <task> [repo=Narrowstack/narrowstack-core] [branch=feat/OS-###-slug]`
-
-**Wiki:** NS-2 charter — `operating-system/wiki/product/charters/ns-2-core.md`
-
-## Development
-
-Phase B (after G8):
-
-```bash
-npm ci
-npm test
-node scripts/lint-manifest.mjs manifest/examples/example-local-warehouse.yaml
+```
+manifest/     schema + generic examples (tenant manifests live in private repos)
+semantics/    OSS template machinery
+deploy/       green-check, rollback, allowlist/ACL gates, destroy, restore
+compose/      local-warehouse and external-warehouse profiles
+acl/          metric sensitivity framework
+scripts/      lint-manifest.mjs, clone-semantics.sh
 ```
 
-Cloud Agent: `.cursor/environment.json` runs `npm ci` on start.
+Deploy shape uses `warehouse.mode` (`local` | `external`) — not topology enums.
 
-## License
+## Phase status
 
-TBD — OSS candidate for boilerplate; proprietary semantics stay in private tenant repos.
+Governing docs are in `docs/`. Implementation waves (W0–W6) are **proposed** until G8
+operator sign-off.
+
+## Quick start
+
+Requires Node.js >= 20.
+
+```bash
+npm ci                     # install dev dependencies (ajv, yaml)
+npm run lint:manifest      # validate manifest/examples/*.yaml against the schema
+npm test                   # schema tests + invalid-fixture rejection tests
+```
+
+Validate a single manifest:
+
+```bash
+npm run lint:manifest -- manifest/examples/example-local-warehouse.yaml
+```
+
+Run the deploy gate (scripts may be stubs until the matching build wave lands):
+
+```bash
+./deploy/green-check.sh manifest/examples/example-local-warehouse.yaml
+```
+
+## Secrets
+
+Committed env templates and manifests carry **`op://` references only**, never literal
+secret values. Resolve at provision time:
+
+```bash
+op run --env-file=compose/local-warehouse/.env.tpl -- ./deploy/green-check.sh manifest/examples/example-local-warehouse.yaml
+```
+
+See [`manifest/README.md`](manifest/README.md) and `.env.tpl.example`.
