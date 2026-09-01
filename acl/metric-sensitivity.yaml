@@ -1,0 +1,7 @@
+# Framework-level metric sensitivity schema (repo root acl/).
+# Tenant-specific principal definitions live in private semantics repo manifest.
+schema_version: 1
+sensitivity_tiers:
+  - leadership
+  - team
+  - agent
