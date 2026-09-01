@@ -4,7 +4,7 @@ slug: narrowstack-core-linear
 date: 2026-08-31
 status: synced
 verified: 2026-09-01
-note: Canonical Linear state after G7 review. See docs/reviews/govern-linear-review-20260831.md.
+note: Canonical Linear state after G7 review + RFC acceptance gates. See docs/reviews/govern-linear-review-20260831.md.
 ---
 
 # Linear backlog — narrowstack-core (synced)
@@ -17,7 +17,7 @@ Titles are outcome-shaped. Phase/wave (G0–G8, W0–W6) lives in descriptions o
 
 | Milestone | Phase / wave | Linked epics & issues | URL |
 |---|---|---|---|
-| Architecture governing stack | G (dry run) | OS-395 | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/architecture-governing-stack-41cfa014 |
+| Architecture governing stack | G (dry run) | OS-395, OS-419–421 | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/architecture-governing-stack-41cfa014 |
 | Core instance for Narrowstack | W0–W5 (dogfood) | OS-396–401, OS-403–409, OS-411 | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/core-instance-for-narrowstack-5a1c315f |
 | External warehouse and legacy fit | W6 (deferred) | OS-402, OS-410 | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/external-warehouse-and-legacy-fit-a69d1154 |
 | Customer stack migration | Post-W4 (TBD) | — (related: [NRWSTK-1261](https://linear.app/narrowstack/issue/NRWSTK-1261)) | https://linear.app/narrowstack/project/narrowstack-core-stackflow-a014edc1978f/milestone/customer-stack-migration-8faca931 |
@@ -27,6 +27,20 @@ Titles are outcome-shaped. Phase/wave (G0–G8, W0–W6) lives in descriptions o
 | ID | Title | Status | URL |
 |---|---|---|---|
 | OS-395 | Architecture governing stack (dry run) | In Progress | https://linear.app/narrowstack/issue/OS-395 |
+
+## RFC review issues (G5 acceptance gates)
+
+Children of [OS-395](https://linear.app/narrowstack/issue/OS-395). Each gates a build epic until team review, debate, and decision are logged.
+
+| ID | Title | RFC | Blocks | Status | URL |
+|---|---|---|---|---|---|
+| OS-419 | Accept semantics delivery model (RFC-004) | [RFC-004](https://github.com/Narrowstack/operating-system/blob/feat/strategy-port-0817/docs/rfc/rfc-004-semantics-delivery.md) | [OS-399](https://linear.app/narrowstack/issue/OS-399) | To-do | https://linear.app/narrowstack/issue/OS-419 |
+| OS-420 | Accept metric ACL and phone-home policy (RFC-005) | [RFC-005](https://github.com/Narrowstack/operating-system/blob/feat/strategy-port-0817/docs/rfc/rfc-005-metric-acl-phone-home.md) | [OS-397](https://linear.app/narrowstack/issue/OS-397) | To-do | https://linear.app/narrowstack/issue/OS-420 |
+| OS-421 | Accept headless product surface (RFC-006) | [RFC-006](https://github.com/Narrowstack/operating-system/blob/feat/strategy-port-0817/docs/rfc/rfc-006-headless-surface.md) | [OS-401](https://linear.app/narrowstack/issue/OS-401) | To-do | https://linear.app/narrowstack/issue/OS-421 |
+
+**Critique input:** `docs/product/research/core-architecture-critique-20260831/review.md` (linked in each issue description).
+
+**Acceptance (all three):** team reviewed → objections recorded → decision logged (Accepted / Accepted with changes / Deferred) → RFC status updated in `operating-system`.
 
 ## Build epics + children
 
