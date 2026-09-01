@@ -2,7 +2,7 @@
 
 Provisioning and runtime shell for Narrowstack Core — IaC, compose, deploy gates, semantics templates, and ACL machinery.
 
-**Status:** Phase G (Govern) — documentation and specs; Phase B (Build) gated on G8 sign-off.
+**Status:** Phase G complete (docs); Phase B W0 scaffold landed on `feat/core-phase-g`.
 
 ## What this repo is
 
@@ -16,36 +16,43 @@ Provisioning and runtime shell for Narrowstack Core — IaC, compose, deploy gat
 
 **Architecture:** [docs/plans/narrowstack-core-architecture-20260831.md](docs/plans/narrowstack-core-architecture-20260831.md)
 
-## Quick links
+## Quick start
+
+```bash
+npm ci
+npm test
+npm run lint:manifest
+./deploy/green-check.sh manifest/examples/example-local-warehouse.yaml
+./scripts/ns-core status
+```
+
+Secrets: copy `.env.tpl.example` → `.env.tpl` and run via `op run --env-file=.env.tpl -- …`
+
+## Layout
+
+```
+manifest/schema.json          # warehouse.mode only — no topology/app_ref
+manifest/examples/            # example-local-warehouse.yaml
+compose/local-warehouse/      # full instance skeleton
+compose/external-warehouse/   # attach skeleton (W6)
+semantics/                    # OSS template machinery
+deploy/                       # green-check, rollback, ACL gates
+scripts/ns-core               # operator CLI stub
+```
+
+## Docs
 
 | Doc | Path |
 |---|---|
 | PRD | [docs/product/prd.md](docs/product/prd.md) |
 | Roadmap | [docs/product/roadmap.md](docs/product/roadmap.md) |
-| Overview | [docs/architecture/overview.md](docs/architecture/overview.md) |
 | Features | [docs/features/](docs/features/) |
 | Guides | [docs/guides/](docs/guides/) |
 
 ## Linear
 
-**Project:** Narrowstack Core (Stackflow) — retarget in G7 to dogfood IaC track.
+**Project:** Narrowstack Core (Stackflow) · Epics G, W0–W4 created; see [linear-backlog-draft.md](docs/product/linear-backlog-draft.md) for remainder.
 
-**Cloud agent:** `@cursor <task> [repo=Narrowstack/narrowstack-core] [branch=feat/OS-###-slug]`
+## Cloud Agent
 
-**Wiki:** NS-2 charter — `operating-system/wiki/product/charters/ns-2-core.md`
-
-## Development
-
-Phase B (after G8):
-
-```bash
-npm ci
-npm test
-node scripts/lint-manifest.mjs manifest/examples/example-local-warehouse.yaml
-```
-
-Cloud Agent: `.cursor/environment.json` runs `npm ci` on start.
-
-## License
-
-TBD — OSS candidate for boilerplate; proprietary semantics stay in private tenant repos.
+`.cursor/environment.json` runs `npm ci` on session start.
