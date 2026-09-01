@@ -2,9 +2,10 @@
 kind: plan
 slug: narrowstack-core-iac-spec
 date: 2026-08-31
-status: draft
+status: superseded
 epic: null
 supersedes: null
+superseded_by: narrowstack-core-architecture-20260831
 refs:
   - operating system/working/core-packaging-spec.md
   - operating system/working/core-prd.md
@@ -12,6 +13,11 @@ refs:
   - ADR-001
   - ADR-003
 ---
+
+> **Superseded (2026-08-31)** — Canonical architecture:
+> [`narrowstack-core-architecture-20260831.md`](./narrowstack-core-architecture-20260831.md).
+> Retained for history only. Do not implement from this file — it predates headless v1
+> (D8), `warehouse.mode` without topology enums (D9), and removal of `app_ref`.
 
 # narrowstack-core — IaC + Core module implementation spec
 
