@@ -15,7 +15,7 @@ Every build wave (W0–W6) and Phase G sign-off (G8) requires a written review b
 | Trigger | Review artifact |
 |---|---|
 | Phase G complete (G8) | `docs/reviews/wave-0-govern-review.md` |
-| End of WN | `docs/reviews/wave-N-YYYYMMDD.md` |
+| End of WN | `docs/reviews/wave-N-YYYYMMDD.md` (from [wave-build-review-template.md](../reviews/wave-build-review-template.md)) |
 
 ## Process
 

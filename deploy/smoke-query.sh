@@ -14,8 +14,8 @@ main() {
   local manifest="${1:-}"
   [ -n "${manifest}" ] || usage
 
-  echo "smoke-query: TODO (W3) run 'mf query' against the deployed warehouse"
-  echo "smoke-query: TODO (W3) exercise one chat path via narrowstack-core-app"
+  echo "smoke-query: TODO (W5) run 'mf query' against the deployed warehouse"
+  echo "smoke-query: TODO (W5) exercise modeling API mf_query for one known metric"
   echo "smoke-query: skeleton pass."
 }
 

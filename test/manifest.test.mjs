@@ -67,3 +67,9 @@ test("literal secret value (non op://) is rejected", async () => {
   const data = await loadYaml(path.join(fixturesDir, "invalid-literal-secret.yaml"));
   assert.equal(validate(data), false);
 });
+
+test("topology enum field is rejected (additionalProperties)", async () => {
+  const validate = await makeValidator();
+  const data = await loadYaml(path.join(fixturesDir, "invalid-topology-field.yaml"));
+  assert.equal(validate(data), false);
+});

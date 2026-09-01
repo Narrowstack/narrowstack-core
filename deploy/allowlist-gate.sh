@@ -24,7 +24,7 @@ main() {
 
   echo "allowlist-gate: profile=${profile:-<unset>} semantics_ref=${semantics_ref:-<unset>}"
   echo "allowlist-gate: TODO (W1) run narrowstack-semantics allowlist verifier:"
-  echo "    python scripts/check-allowlist.py --profile ${profile:-customer-default}"
+  echo "    python scripts/check-allowlist.py --profile ${profile:-default}"
   echo "allowlist-gate: skeleton pass (no artifacts to check yet)."
 }
 
