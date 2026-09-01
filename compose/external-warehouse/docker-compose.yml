@@ -1,0 +1,10 @@
+# external-warehouse — semantic layer attach compose template (W6 skeleton).
+# No local Postgres; connects to customer warehouse via external_dsn_ref from manifest.
+name: ns-core-external-warehouse
+
+services:
+  # TODO (W6): semantics engine against external Postgres DSN
+  # TODO (W6): modeling API stub
+  placeholder:
+    image: alpine:3.20
+    command: ["sleep", "infinity"]

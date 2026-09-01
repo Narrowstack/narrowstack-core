@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# ns-core — on-VM operator CLI (W2 stubs → W4 functional).
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+DEPLOY="${REPO_ROOT}/deploy"
+
+cmd="${1:-}"
+shift || true
+
+usage() {
+  cat <<EOF
+ns-core — Narrowstack Core operator CLI (stub)
+
+Usage: ns-core <command> [args]
+
+Commands:
+  status     Show active pins and warehouse mode
+  deploy     Run green-check with manifest path
+  rollback   Invoke rollback.sh
+  grants     Show telemetry grant state (stub)
+  acl        ACL subcommands: list
+  backup     Trigger backup (stub)
+  restore    Invoke restore.sh
+
+EOF
+}
+
+cmd_status() {
+  echo "ns-core status: stub (W2)"
+  echo "  active-manifest: ${REPO_ROOT}/deploy/active-manifest.json (on-VM SSOT, not in git)"
+}
+
+cmd_deploy() {
+  local manifest="${1:-}"
+  [ -n "${manifest}" ] || { echo "deploy: manifest path required" >&2; exit 2; }
+  "${DEPLOY}/green-check.sh" "${manifest}"
+}
+
+cmd_rollback() {
+  "${DEPLOY}/rollback.sh" "$@"
+}
+
+cmd_grants() {
+  echo "ns-core grants: stub — telemetry T0 default (W3)"
+}
+
+cmd_acl() {
+  local sub="${1:-list}"
+  case "${sub}" in
+    list) echo "ns-core acl list: stub (W1/W4)" ;;
+    *) echo "unknown acl subcommand: ${sub}" >&2; exit 2 ;;
+  esac
+}
+
+case "${cmd}" in
+  status) cmd_status "$@" ;;
+  deploy) cmd_deploy "$@" ;;
+  rollback) cmd_rollback "$@" ;;
+  grants) cmd_grants "$@" ;;
+  acl) cmd_acl "$@" ;;
+  backup) echo "ns-core backup: stub (W4)" ;;
+  restore) "${DEPLOY}/restore.sh" "$@" ;;
+  ""|-h|--help|help) usage ;;
+  *) echo "unknown command: ${cmd}" >&2; usage; exit 2 ;;
+esac

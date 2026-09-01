@@ -1,0 +1,28 @@
+# local-warehouse — full instance compose template (W2 skeleton).
+# Postgres runs on the Cloud VM. Semantics engine and modeling API mount pinned refs.
+# Secrets via `op run --env-file=.env.tpl` (op:// references only).
+name: ns-core-local-warehouse
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${PG_DATABASE:-narrowstack}
+      POSTGRES_USER: ${PG_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${PG_SUPERUSER_PASSWORD:?set via op run}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_SUPERUSER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # TODO (W2): semantics engine (dbt + MetricFlow) at pinned semantics_ref
+  # TODO (W2): modeling API stub with principal auth
+  # TODO (W2): reverse proxy
+
+volumes:
+  pgdata:
