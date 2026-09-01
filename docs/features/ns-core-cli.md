@@ -26,7 +26,7 @@ W2 ships stubs (`--help`, TODO output). W4 makes deploy/rollback/status function
 
 1. Remote CLI from outside VM in v1 — on-VM only
 2. Chat or GUI subcommands
-3. Replacing `op run` for secrets injection
+3. Replacing `.env` for secrets injection
 4. Second contract parallel to modeling API for metrics
 
 ## Invariant checklist

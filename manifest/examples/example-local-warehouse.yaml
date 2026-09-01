@@ -25,12 +25,12 @@ control_plane:
   enabled: false
   phone_home_grants: []
 backup:
-  target_ref: op://Narrowstack/example-core/BACKUP_TARGET
+  target_env: BACKUP_TARGET
   retention_days: 30
 volume_ceiling_gb: 50
 secrets_refs:
-  dlt_pg_password: op://Narrowstack/example-core/DLT_PG_PASSWORD
-  dbt_pg_password: op://Narrowstack/example-core/DBT_PG_PASSWORD
-  mf_pg_password: op://Narrowstack/example-core/MF_PG_PASSWORD
-  api_ro_pg_password: op://Narrowstack/example-core/API_RO_PG_PASSWORD
-  agent_pg_password: op://Narrowstack/example-core/AGENT_PG_PASSWORD
+  dlt_pg_password: DLT_PG_PASSWORD
+  dbt_pg_password: DBT_PG_PASSWORD
+  mf_pg_password: MF_PG_PASSWORD
+  api_ro_pg_password: API_RO_PG_PASSWORD
+  agent_pg_password: AGENT_PG_PASSWORD

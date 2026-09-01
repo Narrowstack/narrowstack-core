@@ -20,7 +20,7 @@ JSON Schema + YAML instance manifest per tenant. Core ships schema and generic e
 1. Topology enum — use `warehouse.mode` only (D9)
 2. Tenant-specific manifests in core repo
 3. Submodule pin for semantics — git ref only (D5)
-4. Secrets in manifest — `op://` references only
+4. Secrets in manifest — env var names only (values in `.env`)
 
 ## Invariant checklist
 
@@ -42,7 +42,7 @@ JSON Schema + YAML instance manifest per tenant. Core ships schema and generic e
 
 1. Example manifest validates against schema with zero errors.
 2. Manifest missing required field `semantics_ref` fails lint with field name.
-3. `warehouse.mode: external` without `external_dsn_ref` fails validation.
+3. `warehouse.mode: external` without `external_dsn_env` fails validation.
 4. `warehouse.mode: local` without `backup` fails validation.
 5. Schema rejects unknown topology enum field if proposed.
 

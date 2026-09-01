@@ -60,7 +60,7 @@ Compared `feat/core-phase-g` against bootstrap branch `origin/cursor/w0-bootstra
 
 ## Errors found and fixed (this pass)
 
-1. **`.env.tpl.example`** — Still referenced `compose/t1-full/` and `t1-dogfood.yaml`. Updated to `local-warehouse` + `example-local-warehouse.yaml`.
+1. **`.env.example`** — Still referenced `compose/t1-full/` and `t1-dogfood.yaml`. Updated to `local-warehouse` + `example-local-warehouse.yaml`.
 2. **`deploy/smoke-query.sh`** — Referenced deprecated `narrowstack-core-app`. Updated to modeling API `mf_query` (W5).
 3. **`deploy/allowlist-gate.sh`** — Echo used obsolete `customer-default` profile name; aligned to `default`.
 4. **Topology rejection test** — Added `test/fixtures/invalid-topology-field.yaml` + test asserting `topology` key fails schema.

@@ -173,7 +173,7 @@ Criteria drawn from the architecture spec (deploy pipeline, rollback, fleet ops,
 | Risk | Mitigation | Wave |
 |---|---|---|
 | No allowlist in production path | Default-deny YAML + deploy gate | W1 |
-| Single warehouse credential | Per-role creds via `op://` | W1 |
+| Single warehouse credential | Per-role creds via env vars | W1 |
 | OS-338 / Stackflow misalignment | G7 Linear reconcile; split dogfood vs client-delivery | G7 |
 | NRWSTK-945 core webapp | Cancel or reparent; replace with modeling API (W5) per RFC-006 | G7 |
 | Tag mutability | SHA or protected tags in manifest | W0 schema |

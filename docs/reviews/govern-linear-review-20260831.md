@@ -69,7 +69,7 @@ Second MCP batch (2026-09-01) duplicated the first. Canonical issues kept; dupli
 
 | ID | Fix |
 |---|---|
-| OS-403 | Added `warehouse.mode` only (D9), no `app_ref` (D8), `op://` secrets |
+| OS-403 | Added `warehouse.mode` only (D9), no `app_ref` (D8), env-var secret refs |
 | OS-404–OS-411 | Replaced `**Epic:** Wn — …` with `**Parent:** OS-### — <outcome title>` |
 | OS-407 | Added headless-only / no core-app; `warehouse.mode: local` |
 | OS-408 | Tenant manifest in semantics repo; no topology enum |

@@ -124,7 +124,7 @@ warehouse:
   provider: postgres          # default v1; snowflake | clickhouse = deferred adapter profiles
   service: postgres           # when mode=local
   volume: pgdata
-  external_dsn_ref: op://...  # when mode=external
+  external_dsn_env: WAREHOUSE_DSN  # when mode=external
   backup: { ... }             # required when mode=local
 ```
 
@@ -151,7 +151,7 @@ warehouse:
 | `control_plane` | no | Phone-home + remote ACL when enabled |
 | `provider_mode` | yes | M0–M3 per provider spec |
 | `telemetry_grants` | yes | Default `[]` (heartbeat only) |
-| `backup` | local only | Target + retention via `op://` |
+| `backup` | local only | Target + retention via env var |
 | `volume_ceiling_gb` | no | Full-refresh limit documentation |
 
 Generic example: `manifest/examples/example-local-warehouse.yaml` (in core). NS tenant manifest: `narrowstack-semantics/deploy/manifest.yaml` (private).
@@ -212,7 +212,7 @@ sequenceDiagram
 1. Change lands in private semantics repo → CI (allowlist + dbt parse + ACL regression)
 2. Tag release (e.g. `v0.5.1`)
 3. Bump `semantics_ref` in tenant manifest
-4. `op run --env-file=.env.tpl -- ./deploy/green-check.sh <tenant-manifest>`
+4. `./deploy/green-check.sh <tenant-manifest>` (with `.env` configured)
 5. Rollback: revert `semantics_ref` to prior tag; re-run green-check
 
 ---
@@ -251,7 +251,7 @@ control_plane:
   phone_home_grants: []   # heartbeat, operational_health, metric_telemetry, support_access
 acl_policy:
   source: local           # local | phone_home
-  policy_ref: null        # op:// or signed bundle when phone_home
+  policy_env: null        # env var or signed bundle when phone_home
 ```
 
 - Outbound-only; customer initiates (per telemetry protocol).
@@ -260,7 +260,7 @@ acl_policy:
 - Super-admin changes: signed, audited, append-only on VM log.
 - `deploy/acl-apply.sh` in core; full receiver in Admin plane.
 
-Per-role warehouse credentials (dlt, dbt, MetricFlow, app reader, agent) via `.env.tpl` + `op://` — never a shared warehouse password.
+Per-role warehouse credentials (dlt, dbt, MetricFlow, app reader, agent) via `.env` files — never a shared warehouse password.
 
 ---
 

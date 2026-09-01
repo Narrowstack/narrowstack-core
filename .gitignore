@@ -1,8 +1,9 @@
 node_modules/
 npm-debug.log*
 .semantics/
+.snapshots/
 .env
 .env.local
+.env.*.local
 *.local
 .DS_Store
-.snapshots/
