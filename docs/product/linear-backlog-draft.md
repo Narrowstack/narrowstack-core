@@ -51,5 +51,9 @@ Duplicate creates from a second G7 pass; canceled 2026-09-01:
 | ID | Duplicate of |
 |---|---|
 | OS-412 | OS-396 |
+| OS-413 | OS-397 |
+| OS-414 | OS-395 |
 | OS-415 | OS-398 |
+| OS-416 | OS-400 |
+| OS-417 | OS-406 |
 | OS-418 | OS-404 |
