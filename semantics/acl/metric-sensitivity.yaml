@@ -1,0 +1,11 @@
+# Metric sensitivity tiers for semantic-layer ACL enforcement.
+# Maps metric names/patterns to tiers: leadership | team | agent
+tiers:
+  leadership:
+    description: Full shipped metric visibility
+  team:
+    description: Operational aggregates only
+  agent:
+    description: Bounded agent metric subset
+
+metrics: {}

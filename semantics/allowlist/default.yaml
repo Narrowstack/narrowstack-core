@@ -1,0 +1,8 @@
+# Default-deny allowlist profile for OSS template.
+# Models ship only when listed. Seeds and dashboard tables in scope.
+denied_subtrees:
+  - sfdc_demo
+
+models: []
+seeds: []
+dashboard_tables: []
