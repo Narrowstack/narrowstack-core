@@ -293,3 +293,102 @@ note: All phases proposed until Phase G8 sign-off. Waves W0–W6 may reorder wit
 - [ ] **TASK-045** — Open Linear epic for legacy track
   Files: Linear only
   Verify: Epic linked to NS-2 Core project with W6 label.
+
+---
+
+## Feature spec — instance manifest
+
+**Goal:** `docs/features/instance-manifest.md` acceptance criteria traced to W0 implementation tasks.
+
+- [ ] **TASK-046** — Operator sign-off on manifest schema spec
+  Files: `docs/features/instance-manifest.md`, `manifest/schema.json`
+  Notes: Confirm minimum fields match architecture plan; example manifest is generic only.
+  Verify: All five verification plan items have owning TASK in W0.
+
+---
+
+## Feature spec — allowlist gate
+
+**Goal:** Allowlist feature spec gates W1 deploy enforcement.
+
+- [ ] **TASK-047** — Security review on default-deny allowlist spec
+  Files: `docs/features/allowlist-gate.md`
+  Notes: Confirm seeds and dashboard tables in scope; sfdc_demo denial tested.
+  Verify: Verification plan maps to TASK-008, TASK-009.
+
+---
+
+## Feature spec — rollback deploy
+
+**Goal:** Rollback-first spec aligned with green-check orchestration.
+
+- [ ] **TASK-048** — Operator sign-off on rollback deploy spec
+  Files: `docs/features/rollback-deploy.md`
+  Notes: Auto-rollback default; rollback is restore path not second mechanism.
+  Verify: Verification plan maps to TASK-011, TASK-012, TASK-016, TASK-017.
+
+---
+
+## Feature spec — metric ACL
+
+**Goal:** Three-layer ACL spec reviewed before W1 build; RFC tracked for remote push.
+
+- [ ] **TASK-049** — Security review on metric ACL spec
+  Files: `docs/features/metric-acl.md`
+  Notes: Flag RFC for phone-home ACL push (Phase G5); local kill-switch override explicit.
+  Verify: Verification plan maps to TASK-010; principal fixtures defined.
+
+---
+
+## Feature spec — local warehouse deploy
+
+**Goal:** Local compose spec gates W2 green-check integration.
+
+- [ ] **TASK-050** — Operator sign-off on local-warehouse deploy spec
+  Files: `docs/features/local-warehouse-deploy.md`
+  Notes: Cloud handoff documented; volume ceiling posture acknowledged.
+  Verify: Verification plan maps to TASK-014 through TASK-019.
+
+---
+
+## Feature spec — ns-core CLI
+
+**Goal:** CLI spec defines stub vs functional waves.
+
+- [ ] **TASK-051** — Operator sign-off on ns-core CLI spec
+  Files: `docs/features/ns-core-cli.md`
+  Notes: W2 stubs vs W4/W5 functional scope explicit.
+  Verify: Verification plan maps to TASK-018, TASK-039.
+
+---
+
+## Feature spec — semantics template cut
+
+**Goal:** OSS/private cut line agreed before W3 brownfield migrate.
+
+- [ ] **TASK-052** — Human sign-off on semantics template cut
+  Files: `docs/features/semantics-template-cut.md`
+  Notes: Data-boundary table reviewed; RFC for clone vs artifact delivery tracked.
+  Verify: Verification plan maps to TASK-020 through TASK-023.
+
+---
+
+## Feature spec — modeling API
+
+**Goal:** Headless API spec replaces core-app as v1 surface.
+
+- [ ] **TASK-053** — Technical review on modeling API spec
+  Files: `docs/features/modeling-api.md`
+  Notes: API contract matches ADR-001 bounded-tool facade intent.
+  Verify: Verification plan maps to TASK-037, TASK-038.
+
+---
+
+## Feature spec — legacy client fit
+
+**Goal:** Deferred research spec scoped; no build commitment.
+
+- [ ] **TASK-054** — Operator acknowledges legacy fit as W6 deferred
+  Files: `docs/features/legacy-client-fit.md`
+  Notes: Seven-site inventory; no auto-migration; OS-338 split referenced.
+  Verify: Verification plan maps to TASK-043 through TASK-045.
