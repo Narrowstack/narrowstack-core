@@ -1,0 +1,26 @@
+{
+  "version": "3.0.0",
+  "query": "OSS self-hostable lightweight AI agent/chat harnesses for enterprise RAG chat-with-data alongside Narrowstack Core",
+  "mode": "deep",
+  "started_at": "2026-09-22T17:30:51.203505+00:00",
+  "finished_at": "2026-09-22T17:36:46.782928+00:00",
+  "assumptions": [
+    "Core remains SoT for metrics/ACL",
+    "Lightweight = one-VM compatible",
+    "Hermes = NousResearch/hermes-agent",
+    "EE features scored as adopt-risk not hard fail"
+  ],
+  "provider_config": {
+    "primary": "websearch+gh-api+webfetch",
+    "scholarly": null
+  },
+  "report_dir": "docs/product/research/oss-agent-harness-chat-data-20260922",
+  "artifact_paths": {
+    "sources": "sources.jsonl",
+    "evidence": "evidence.jsonl",
+    "claims": "claims.jsonl",
+    "report": "deep-research.md",
+    "shortlist": "shortlist.md"
+  },
+  "continuation": null
+}

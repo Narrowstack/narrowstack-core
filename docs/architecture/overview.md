@@ -86,5 +86,6 @@ Waves are proposed placeholders — reorder or defer in Phase G without sunk bui
 | `docs/features/*.md` | Per-capability specs |
 | `docs/guides/*.md` | Operator runbooks (skeletons until Phase B) |
 | `docs/architecture/` | Working copies of OS strategy specs |
+| `docs/architecture/chat-with-modeled-data.md` | Chat + data-plane prototype (LibreChat / LiteLLM / pgvector) |
 
 Strategy canon remains in `operating-system/` wiki and working docs — one fact, one home; repo docs link back.

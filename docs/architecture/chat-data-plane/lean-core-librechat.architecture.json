@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Core chat + data plane (lean)",
+    "locale": "en",
+    "output": "lean-core-librechat.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "governed-metrics",
+        "label": "Governed metrics path",
+        "focus": ["principals", "harness", "core_mcp", "acl", "metricflow", "postgres"],
+        "note": "Chat shell calls Core MCP; MetricFlow + ACL stay the metrics source of truth."
+      },
+      {
+        "id": "models-spend",
+        "label": "Models and spend",
+        "focus": ["harness", "litellm", "providers", "hermes"],
+        "note": "LiteLLM routes completions and budgets; no warehouse credentials on the gateway."
+      },
+      {
+        "id": "ingest-transform",
+        "label": "Ingest and transform",
+        "focus": ["scheduler", "dlt", "dbt", "postgres", "metricflow"],
+        "note": "cron and green-check drive dlt then dbt into Postgres; dbt feeds MetricFlow."
+      },
+      {
+        "id": "kb-adjunct",
+        "label": "KB adjunct",
+        "focus": ["core_mcp", "acl", "postgres"],
+        "note": "pgvector KB is ACL-filtered via Core tools and never replaces MetricFlow."
+      }
+    ]
+  },
+  "components": [
+    { "id": "principals", "type": "external", "label": "Principals", "sublabel": "SSO users", "pos": [36, 300], "size": [118, 58] },
+    { "id": "harness", "type": "frontend", "label": "LibreChat", "sublabel": "or Open WebUI", "pos": [210, 300], "size": [128, 58], "tag": "customer UI" },
+    { "id": "hermes", "type": "backend", "label": "Hermes", "sublabel": "operator only", "pos": [210, 88], "size": [128, 54], "tag": "sidecar" },
+    { "id": "litellm", "type": "backend", "label": "LiteLLM", "sublabel": "route + spend", "pos": [410, 88], "size": [128, 54] },
+    { "id": "providers", "type": "external", "label": "Providers", "sublabel": "API / Ollama", "pos": [610, 88], "size": [128, 54] },
+    { "id": "core_mcp", "type": "backend", "label": "Core MCP/API", "sublabel": "metrics + kb tools", "pos": [410, 300], "size": [138, 58], "tag": "SoT tools" },
+    { "id": "acl", "type": "security", "label": "Core ACL", "sublabel": "allowlist + tiers", "pos": [610, 300], "size": [128, 58] },
+    { "id": "metricflow", "type": "backend", "label": "MetricFlow", "sublabel": "metrics SoT", "pos": [810, 300], "size": [128, 58] },
+    { "id": "postgres", "type": "database", "label": "Postgres", "sublabel": "marts + pgvector", "pos": [1010, 300], "size": [138, 58], "brand": "postgresql" },
+    { "id": "scheduler", "type": "messagebus", "label": "cron / green-check", "sublabel": "v1 runtime", "pos": [410, 520], "size": [138, 54] },
+    { "id": "dlt", "type": "backend", "label": "dlt", "sublabel": "ingestion", "pos": [620, 520], "size": [118, 54] },
+    { "id": "dbt", "type": "backend", "label": "dbt", "sublabel": "transforms", "pos": [810, 520], "size": [118, 54] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Customer VM — ADR-003", "wraps": ["core_mcp", "acl", "metricflow", "postgres", "scheduler", "dlt", "dbt", "litellm"], "pad": 18 },
+    { "kind": "security-group", "label": "governed metrics plane", "wraps": ["core_mcp", "acl", "metricflow"], "pad": 12 }
+  ],
+  "connections": [
+    { "id": "user-to-harness", "from": "principals", "to": "harness", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "harness-to-core", "from": "harness", "to": "core_mcp", "label": "MCP / OpenAPI", "variant": "emphasis" },
+    { "id": "harness-to-litellm", "from": "harness", "to": "litellm", "label": "completions", "fromSide": "top", "toSide": "bottom", "labelDy": -28 },
+    { "id": "hermes-to-litellm", "from": "hermes", "to": "litellm", "label": "operator", "variant": "dashed" },
+    { "id": "litellm-to-providers", "from": "litellm", "to": "providers", "label": "OpenAI-compat" },
+    { "id": "core-to-acl", "from": "core_mcp", "to": "acl", "label": "principal token", "variant": "security", "labelDy": -28 },
+    { "id": "acl-to-mf", "from": "acl", "to": "metricflow", "label": "mf_query", "labelDy": -28 },
+    { "id": "mf-to-pg", "from": "metricflow", "to": "postgres", "label": "SQL" },
+    { "id": "core-kb", "from": "core_mcp", "to": "postgres", "label": "kb_search", "variant": "dashed", "fromSide": "top", "toSide": "top", "via": [[479, 210], [1079, 210]], "labelDy": -36 },
+    { "id": "sched-dlt", "from": "scheduler", "to": "dlt", "label": "run" },
+    { "id": "dlt-dbt", "from": "dlt", "to": "dbt", "label": "then dbt" },
+    { "id": "dbt-pg", "from": "dbt", "to": "postgres", "label": "marts", "fromSide": "right", "toSide": "bottom", "via": [[1140, 547], [1079, 547]], "labelAt": [1168, 500] },
+    { "id": "dbt-mf", "from": "dbt", "to": "metricflow", "label": "semantic models", "fromSide": "top", "toSide": "bottom", "labelDx": 72 }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Thin shell", "items": ["LibreChat (or OWUI) is chrome only", "Hermes stays operator sidecar", "Core tools own metrics answers"] },
+    { "dot": "emerald", "title": "Data plane", "items": ["dlt → Postgres → dbt → MetricFlow", "cron + green-check for v1 runtime", "Prefect is the first upgrade path"] },
+    { "dot": "rose", "title": "Boundaries", "items": ["LiteLLM: models and spend only", "pgvector KB adjunct, not metrics SoT", "ACL allowlist stays in Core"] }
+  ]
+}
