@@ -3,12 +3,9 @@ kind: architecture
 slug: telemetry-protocol
 date: 2026-08-31
 verified: 2026-08-31
-wiki: operating-system/working/core-telemetry-protocol.md
 ---
 
 # Telemetry protocol — phone-home
-
-**Wiki:** `operating-system/working/core-telemetry-protocol.md` (strategy canon)
 
 **Summary:** Consent-first telemetry with a customer-controlled kill-switch. Outbound-only — the customer's VM initiates every connection.
 
@@ -93,3 +90,22 @@ Remote ACL policy push requires explicit consent grant; local kill-switch overri
 4. Customer exports full audit log unaided
 5. T3 requires live unexpired grant; self-closes
 6. Every category shows sample payload before grantable
+
+## Why it matters commercially
+
+Risky assumption: buyers who bought "own your data" will consent to managed access at all. Majority refusal of any tether kills the tether as designed and forces the export-first fallback; refusing any tether is already an ICP disqualifier. The goal is not to collect telemetry but to build the version an ownership buyer signs, with the fallback built in the same breath.
+
+## The plain-English version
+
+If it cannot be said aloud without qualification, change the design, not the wording.
+
+- We can see that your system is running, and nothing else, unless you say otherwise.
+- Anything more is something you turn on, one thing at a time, and you can see exactly what it sends first.
+- We never see individual records, ever, and no setting changes that.
+- When a person here needs to look inside, you approve that person, that time. It expires by itself.
+- You can cut us off from inside your own system, without calling us. Everything of yours keeps running.
+- You have your own copy of the log of everything we did, and you can take it with you.
+
+## Testing the consent assumption
+
+Five Mom Test interviews with current accounts. Show the plain-English list and a sample payload, then ask which of the four tiers they would switch on and which would make them walk. "Would you accept monitoring?" measures politeness. Record refusals by tier: refusals concentrated in T2 and T3 while T0 and T1 pass mean a smaller tether, not a dead one.

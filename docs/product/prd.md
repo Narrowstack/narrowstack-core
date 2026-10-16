@@ -4,7 +4,6 @@ slug: narrowstack-core
 date: 2026-08-31
 status: draft
 verified: 2026-08-31
-wiki: operating-system/working/core-prd.md
 linear: Narrowstack Core (Stackflow)
 ---
 
@@ -88,3 +87,18 @@ Steps 5, 9, and 10 are the loud-fail claims a buyer can verify.
 | Open source vs source-available | Tucker + Tyler | Business-model call |
 | OS-338 split (Airbyte demo vs dlt dogfood) | Tucker | G7 Linear reconcile |
 | Consent rate per telemetry category | Tucker | Five pre-registered interviews |
+| Volume ceiling for full-refresh loading | Tucker | One load test an order of magnitude above our own data |
+| Does a technical buyer exist in our reachable market? | Tucker | First qualified conversation with one |
+| Does the hosted-ingestion tool's licence constrain Cloud's hosted stack? | Tucker raises, Tyler decides | Ask counsel |
+
+## Where this could run long
+
+- The entity layer does not exist. Client and Person each exist three times, unreconciled; Asset only for Managed; Outcome is absent. Scope it as durable keys minted at each ingest door plus one human-adjudicated cross-reference table, not a resolution service.
+- The company split is a column in shared marts, not a subtree. Making it optional is a real refactor and a different one from the entity layer.
+- Two systems are both called Core. The client-delivery deployments and this build share only MetricFlow. Convergence is three migrations, not one.
+
+## Measures to handle carefully
+
+- Agent deflection rate: measure it, publish it, never set a target. A target pressures the agent to answer what it should hand off; escalation is a feature.
+- Consent rate is measured per telemetry category or it is measured wrong. Refusals concentrated in the two heavier tiers mean a smaller tether, not a dead one.
+- Not counted, deliberately: number of metrics defined, number of dashboards, sources connected without a coverage denominator.

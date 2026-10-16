@@ -3,12 +3,9 @@ kind: architecture
 slug: packaging
 date: 2026-08-31
 verified: 2026-08-31
-wiki: operating-system/working/core-packaging-spec.md
 ---
 
 # Packaging — IaC and deploy contract
-
-**Wiki:** `operating-system/working/core-packaging-spec.md` (strategy canon)
 
 **Summary:** How a Core instance is provisioned, upgraded, restored, and destroyed on a per-customer VM. IaC is the interface between Core and Cloud; no snowflake servers.
 
