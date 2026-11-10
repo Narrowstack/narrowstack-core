@@ -1,5 +1,7 @@
 # Plan: split Core into a template and instances, and land it in reviewable PRs
 
+> **2026-11-10:** superseded for deploy shape, naming, and access by [2026-11-10-core-instance-architecture.md](./2026-11-10-core-instance-architecture.md). The PR sequence below stands; deltas are listed there.
+
 > Status: proposed, 2026-10-02. Work status lives in Linear (project *Narrowstack Core (Stackflow)*: parents OS-399 for the instance stack, OS-581 for the template stack), not here.
 > Supersedes the governance model in `narrowstack-core-architecture-20260831.md` (develop branch): no "Phase G before any build" gate. The thin-Core direction from the 2026-09-22 strategy session governs.
 
