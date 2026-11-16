@@ -241,15 +241,15 @@ Ordered gate (from packaging spec §7):
 
 ## Migration waves
 
-| Wave | Goal | Semantics | Core-app | Core repo | Keep separate? |
+| Wave | Phase | Goal | Semantics | Core-app | Core repo |
 |---|---|---|---|---|---|
-| **W0 — Bootstrap** | Repo exists, manifest schema, CI lint | Add `allowlist.yaml` + CI job | Wire manifest fetch in build | Init structure above | Yes — interfaces only |
-| **W1 — Allowlist gate** | Default-deny enforced | Classify all models/seeds/dashboard tables; deny internal families | Remove committed `semantic_manifest.json`; generate at build from semantics pin | `allowlist-gate.sh` calls semantics verifier | Yes |
-| **W2 — T1 compose** | Single-command deploy on Cloud VM | Pin ref; no code move | Compose service; env from manifest | `compose/t1-full`, green-check | Yes |
-| **W3 — Second instance** | PRD skeleton steps 1–10 | Optional `company_code` optional refactor + one entity key | Non-builder chat test | Full green/destroy/restore | Yes until skeleton passes |
-| **W4 — T2 path** | Attach to external warehouse | Same allowlist profiles | Same app | `compose/t2-semantic` | Yes |
-| **W5 — Facade** | Bounded-tool contract | Modeling API or engine FastAPI | Depends on contract not Hermes events | Runtime facade package | Yes |
-| **W6 — Post-skeleton** | Four-repo split, skills repo, incremental dlt | Split when second customer exists | Rename/merge decisions | Absorb or submodule | **Decision gate** |
+| **W0 — Bootstrap** | A | Repo exists, manifest schema, CI lint, `semantics-starter/` stub | — (no NS touch yet) | — | Init structure above |
+| **W1 — Allowlist contract** | A | Gate interface + starter allowlist profile | Starter only in core template | — | `allowlist-gate.sh` + schema |
+| **W2 — T1 compose** | A | Generic single-command deploy on any Docker host | Starter semantics ref in example manifest | Generic compose service | `compose/t1-full`, green-check |
+| **W3 — NS semantics rebuild** | B | Clean NS dogfood on backbone | **Redo** `narrowstack-semantics`; `internal-dogfood` profile | Manifest from pin; drop committed JSON | NS manifest example |
+| **W4 — NS instance live** | B | PRD skeleton steps 1–10 on NS books | One entity key, tie-outs | Non-builder chat test | destroy/restore drill |
+| **W5 — T2 path** | B | Attach to external warehouse | Same profiles | Same app | `compose/t2-semantic` |
+| **W6 — Facade + post-skeleton** | B+ | Bounded-tool contract; four-repo split if 2nd customer | Split when warranted | Rename/merge decisions | Runtime facade package |
 
 **Explicit keep-separate interfaces:**
 
@@ -397,18 +397,6 @@ op run --env-file=compose/t1-full/.env.tpl -- ./deploy/green-check.sh manifest/e
 
 ---
 
-## Decisions needed from operator
-
-Max 5 — confirm before implementation starts:
-
-| # | Decision | Recommended default | Tradeoff |
-|---|---|---|---|
-| **D1** | Repo topology for v1 | **Dual-repo:** core = IaC/runtime shell; semantics stays SSOT | Monolithic merge is simpler git but violates split gate and moves working code before deploy proof; four-repo is premature |
-| **D2** | Skeleton deploy topology | **Prove T1 first** on Cloud VM; T2 in Wave 4 | T2-only is faster commercially but skips destroy/restore and ADR-003 proof path |
-| **D3** | Dogfood warehouse during skeleton | **Keep managed Postgres for instance #1; self-host instance #2** | Two packaging paths briefly; avoids blocking skeleton on migration |
-| **D4** | Allowlist profile for first customer-shaped deploy | **`customer-default`** excludes bonus, company-split, sfdc_demo, social/cloudflare optional modules | Aggressive exclusion may drop metrics a buyer expects; operator validates family list once |
-| **D5** | core-app manifest coupling | **Build artifact from semantics pin; delete committed JSON** | Requires CI wiring in core-app before merge; eliminates drift permanently |
-
 ---
 
 ## Open questions (deferred — not blocking W0–W1)
@@ -420,4 +408,107 @@ Max 5 — confirm before implementation starts:
 
 ---
 
-*Plan status: draft — awaiting operator confirmation on D1–D5 before roadmap emission and W0 implementation.*
+## Operator decisions (2026-08-31)
+
+| # | Status | Decision |
+|---|---|---|
+| **D1** | **Open — architecture analysis below** | Wants OSS-ready core + per-deployment proprietary semantics; evaluating dual-repo vs alternatives |
+| **D2** | **Confirmed** | Prove T1 first; T2 in Wave 4 |
+| **D3** | **Confirmed** | Managed Postgres for instance #1; self-host instance #2 |
+| **D4** | **Confirmed** | `internal-dogfood` profile first; `customer-default` when NS dogfood is clean |
+| **D5** | **Exploring — not committed** | Submodule model under evaluation; see § Submodule options |
+
+### Project phases (operator framing)
+
+Two major phases — customer migration is **out of scope**:
+
+| Phase | Goal | Scope |
+|---|---|---|
+| **Phase A — Boilerplate** | `narrowstack-core` is generic, stand-uppable backbone | Manifest schema, compose, deploy/destroy/restore, allowlist gate contract, public-template semantics stub |
+| **Phase B — NS dogfood** | Stand up Narrowstack's own instance on the backbone | Blow away / redo `narrowstack-semantics` mess; NS-specific pipelines, models, bonus logic live in private semantics repo |
+| **Phase C (deferred)** | Migrate existing bespoke customer stacks | Not in scope |
+
+Waves W0–W2 map to **Phase A**. W3+ map to **Phase B**.
+
+---
+
+## D1 — Topology for OSS core + proprietary semantics per deployment
+
+### What must be true regardless of topology
+
+| Layer | OSS candidate? | Per-deployment? | Mechanism |
+|---|---|---|---|
+| Deploy scripts, compose, manifest schema | **Yes** | Config only | `manifest/examples/*.yaml` per tenant |
+| dlt/dbt/MetricFlow *machinery* (patterns, templates) | **Yes** (as starter) | Fork per company | Template repo or `semantics-starter/` in core |
+| Actual pipelines, schemas, DAGs, metrics | **No** | **Yes — proprietary** | Private git repo per company |
+| Allowlist profiles | Partially | Per profile | `allowlist/internal-dogfood.yaml` vs `customer-default.yaml` in *their* semantics repo |
+| Chat GUI shell | Maybe | Theming/config | `narrowstack-core-app` stays generic; semantics manifest is the data contract |
+
+**Core insight:** Core should never contain company-specific dbt models. It only **consumes** a semantics git ref at deploy time. Open-sourcing core is viable if the repo stays free of NS bonus logic, company-split metrics, and internal seeds.
+
+### Topology comparison
+
+```mermaid
+flowchart TB
+    subgraph OSS["Potentially public"]
+        CORE["narrowstack-core\n(IaC + compose + gates)"]
+        STARTER["semantics-starter\n(template / examples)"]
+        APP["narrowstack-core-app\n(generic GUI shell)"]
+    end
+    subgraph PRIVATE["Per company — private repos"]
+        NS["narrowstack-semantics\n(Narrowstack books)"]
+        CUST["customer-acme-semantics\n(future)"]
+    end
+    CORE -->|"manifest.semantics_ref"| NS
+    CORE -->|"manifest.semantics_ref"| CUST
+    STARTER -.->|"fork / copy"| NS
+    STARTER -.->|"fork / copy"| CUST
+    APP -->|"build: manifest from pin"| NS
+```
+
+| Topology | OSS core? | Per-deployment semantics? | Versioning | Verdict |
+|---|---|---|---|---|
+| **Dual-repo (core + private semantics)** | Clean — core has zero proprietary models | Natural — one private repo per company | `manifest.semantics_ref` = tag/sha | **Best fit for stated goals** |
+| Monolithic (merge semantics into core) | **Blocked** — NS proprietary code in same repo as OSS candidate | Awkward — would need private fork of entire core per customer | Tag whole monorepo | Reject for OSS goal |
+| Four-repo split now | Core-connectors/dbt could be OSS libs; semantics still private | Same as dual-repo but more repos to fork | Multiple refs in manifest | Defer until 2nd customer |
+| Submodule (semantics inside core checkout) | Core repo stays clean if submodule is **not committed** — only manifest pin | Each deployment clones core + init submodule to private URL | Submodule sha in lockfile or manifest | Viable for Phase B; see § Submodule options |
+
+### Recommended D1 resolution
+
+**Dual-repo with manifest pin** — same as original recommendation, but reframed:
+
+1. **`narrowstack-core`** — public candidate; ships `semantics-starter/` as copy-paste template (or separate `narrowstack-semantics-starter` repo when OSS ships).
+2. **`narrowstack-semantics`** — Narrowstack's **private** semantics repo (rename optional: `narrowstack-semantics-dogfood`). Not part of OSS release.
+3. **Future customers** — fork starter → private repo → manifest points at their ref. Core binary/compose unchanged.
+4. **Version control per deployment** — instance manifest is the version lock:
+
+```yaml
+# manifest/examples/ns-dogfood.yaml (Phase B)
+tenant_id: narrowstack
+topology: T1
+semantics_ref: "github.com/Narrowstack/narrowstack-semantics@v0.4.2"  # private
+allowlist_profile: internal-dogfood
+enabled_pipelines: [harvest, gusto, linear, ...]
+```
+
+Changing a deployment's data layer = bump `semantics_ref` + re-run green-check. No core code change.
+
+---
+
+## D5 — Submodule options (exploratory, not committed)
+
+Three ways core-app (and core deploy) can bind to semantics without committed manifest drift:
+
+| Approach | How it works | Pros | Cons |
+|---|---|---|---|
+| **A. Manifest git ref only** (plan default) | Deploy clones semantics at `semantics_ref`; CI generates `semantic_manifest.json` artifact | Clean separation; no submodule ceremony; OSS core stays simple | Requires network + git auth at build/deploy; two checkouts to reason about |
+| **B. Git submodule** | `narrowstack-core-app/semantics` → private repo; `git submodule update` at pin | Reproducible local dev; explicit sha in `.gitmodules` + submodule commit | Submodule UX is painful; easy to desync; **submodule URL in core-app is awkward if core-app is public** |
+| **C. Submodule at deploy root only** | Core deploy script clones core + semantics side-by-side per manifest; app mounts semantics path | Core and core-app repos stay free of submodule URLs | Deploy script owns layout; dev must mirror locally |
+
+**Submodule implication for OSS:** If `narrowstack-core-app` goes public, committing a submodule pointer to `github.com/Narrowstack/narrowstack-semantics` either leaks that a private repo exists or forces a public placeholder. Submodule fits better at the **deploy workspace** (option C) than inside a potentially public app repo.
+
+**Operator lean (not committed):** Start Phase A with **option A** (manifest ref + CI artifact). Revisit submodule for local dev ergonomics in Phase B if clone-at-pin feels too friction-heavy.
+
+---
+
+*Plan status: draft — D2/D3/D4 confirmed; D1 architecture direction agreed in principle (dual-repo + manifest pin); D5 exploring option A vs C. Phase A (W0–W2) can start once D1 is explicitly signed off.*
