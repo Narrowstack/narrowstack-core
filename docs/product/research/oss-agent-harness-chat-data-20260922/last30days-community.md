@@ -31,7 +31,7 @@ KEY PATTERNS from the research:
 ├─ 📊 Polymarket: 1 market │ US government bans an open source 8.0%
 ├─ 🌐 Web: 17 pages - pub.towardsai.net, pinggy.io, markaicode.com, press.farm, hermes-agent.nousresearch.com, GitHub, aicybr.com, datastackhub.com
 ├─ 🗣️ Top voices: r/LocalLLaMA, r/ChatGPTCoding, r/selfhosted
-└─ 📎 Raw results saved to ~/Dev/agent-workflows/var/last30days/self-hosted-open-source-ai-chat-rag-agent-harness-open-webui-librechat-dify-anythingllm-hermes-raw-v3.md
+└─ 📎 Raw results kept outside this repo (operator research store; not committed)
 ---
 
 Want a deeper dive on any one candidate (LibreChat MCP wiring, Onyx EE ACL, Hermes skill loop), or a head-to-head `/last30days LibreChat vs Open WebUI`?
