@@ -1,28 +1,158 @@
-# local-warehouse — full instance compose template (W2 skeleton).
-# Postgres runs on the Cloud VM. Semantics engine and modeling API mount pinned refs.
-# Secrets via --env-file .env (copy from .env.example).
-name: ns-core-local-warehouse
+# Narrowstack Core — full instance (warehouse.mode: local).
+# The shared Core spine of Variant A (chat edge) and Variant C (headless): one warehouse, one
+# pipeline runner, one Modeling API that is the front door and bouncer for REST, MCP, and CLI.
+#
+# Status: PROPOSED spec stub (2026-09-22). The `runner/` and `api/` build contexts land in
+# Phase B and do not exist yet, so only `postgres` can start today. `docker compose config`
+# validates the whole file.
+#
+# Not in this file on purpose (stubs, off the initial execution path; separate Coolify resources
+# when activated): chat edge (Open WebUI / LibreChat), model plane (LiteLLM), knowledge plane
+# (kb_* tools). See docs/architecture/core-runtime/edge-stubs.md.
+#
+# Portable by design: standard Compose keys only. No `profiles:` (Coolify does not honor them
+# reliably), no Coolify-only keys (`content:`, `exclude_from_hc`), no host `ports:` (the API is
+# the only public surface, routed by Coolify's proxy via SERVICE_URL_API_8080).
+#
+# Local:   cp .env.example .env && docker compose config --quiet
+# Coolify: Docker Compose resource · base directory "/" ·
+#          compose location "compose/local-warehouse/docker-compose.yml"
+# Docs:    README.md (this directory) · docs/architecture/core-runtime/
+name: ns-core
 
 services:
+  # Warehouse: Postgres 16 with pgvector available. The `vector` extension is created only when the
+  # knowledge-plane stub is activated. Never published; only `runner` and `api` connect, each with
+  # its own role (created by the runner's bootstrap stage).
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:0.8.6-pg16
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${PG_DATABASE:-narrowstack}
-      POSTGRES_USER: ${PG_SUPERUSER:-postgres}
-      POSTGRES_PASSWORD: ${PG_SUPERUSER_PASSWORD:?set in .env}
+      - POSTGRES_DB=${PG_DATABASE:-narrowstack}
+      - POSTGRES_USER=${PG_SUPERUSER:-postgres}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_64_POSTGRES}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "${PG_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PG_SUPERUSER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
 
-  # TODO (W2): semantics engine (dbt + MetricFlow) at pinned semantics_ref
-  # TODO (W2): modeling API stub with principal auth
-  # TODO (W2): reverse proxy
+  # Runner: pipeline runtime + deploy gate + operator CLI host (Phase B image).
+  # Entrypoint `ns-core bootstrap` runs green-check for the pinned inputs, publishes a generation
+  # (or keeps the last-good one on failure), then execs supercronic for scheduled refreshes.
+  # Healthy = an active, last-good generation exists. Operators: `docker compose exec runner ns-core …`
+  runner:
+    build:
+      context: ../..
+      dockerfile: runner/Dockerfile
+    image: ns-core-runner:${NS_CORE_VERSION:-dev}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Instance
+      - NS_TENANT_ID=${NS_TENANT_ID:?set NS_TENANT_ID}
+      - NS_CORE_VERSION=${NS_CORE_VERSION:-dev}
+      - NS_LOG_LEVEL=${NS_LOG_LEVEL:-info}
+      - NS_STATE_DIR=/var/lib/ns-core/state
+      - NS_ARTIFACTS_DIR=/var/lib/ns-core/artifacts
+      - NS_SEMANTICS_DIR=/var/lib/ns-core/semantics
+      # Tenant semantics repo, cloned at runtime with a read-only deploy key
+      - NS_SEMANTICS_REPO=${NS_SEMANTICS_REPO:?set NS_SEMANTICS_REPO}
+      - NS_SEMANTICS_REF=${NS_SEMANTICS_REF:?set NS_SEMANTICS_REF}
+      - NS_SEMANTICS_DEPLOY_KEY_B64=${NS_SEMANTICS_DEPLOY_KEY_B64:?set NS_SEMANTICS_DEPLOY_KEY_B64}
+      - NS_MANIFEST_PATH=${NS_MANIFEST_PATH:-deploy/manifest.yaml}
+      # Warehouse: superuser for the bootstrap stage only, then per-role credentials.
+      # Names inside the container match manifest secrets_refs.
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_DATABASE=${PG_DATABASE:-narrowstack}
+      - PG_SUPERUSER=${PG_SUPERUSER:-postgres}
+      - PG_SUPERUSER_PASSWORD=${SERVICE_PASSWORD_64_POSTGRES}
+      - DLT_PG_PASSWORD=${SERVICE_PASSWORD_64_LOADER}
+      - DBT_PG_PASSWORD=${SERVICE_PASSWORD_64_TRANSFORMER}
+      - MF_PG_PASSWORD=${SERVICE_PASSWORD_64_QUERY}
+      - API_RO_PG_PASSWORD=${SERVICE_PASSWORD_64_APISTATE}
+      # Runtime
+      - NS_REFRESH_SCHEDULE=${NS_REFRESH_SCHEDULE:-0 */6 * * *}
+      - NS_AUTO_ROLLBACK=${NS_AUTO_ROLLBACK:-1}
+      - NS_GENERATIONS_RETAINED=${NS_GENERATIONS_RETAINED:-2}
+      - NS_CORE_API_URL=http://api:8080
+      # Backup (manifest backup.target_env = BACKUP_TARGET)
+      - BACKUP_TARGET=${BACKUP_TARGET:-}
+      - BACKUP_S3_ACCESS_KEY_ID=${BACKUP_S3_ACCESS_KEY_ID:-}
+      - BACKUP_S3_SECRET_ACCESS_KEY=${BACKUP_S3_SECRET_ACCESS_KEY:-}
+      - NS_BACKUP_SCHEDULE=${NS_BACKUP_SCHEDULE:-30 2 * * *}
+      # Telemetry / control plane: outbound only, consent-gated, off by default
+      - NS_CONTROL_PLANE_ENABLED=${NS_CONTROL_PLANE_ENABLED:-false}
+      # Source credentials: list each enabled pipeline's dlt variables explicitly (least privilege).
+      # Illustrative: - SOURCES__EXAMPLE_REST__API_KEY=${SOURCES__EXAMPLE_REST__API_KEY}
+    volumes:
+      - semantics:/var/lib/ns-core/semantics
+      - artifacts:/var/lib/ns-core/artifacts
+      - state:/var/lib/ns-core/state
+    healthcheck:
+      test: ["CMD", "ns-core", "status", "--healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      # First bootstrap loads sources and builds the first generation; allow for it.
+      start_period: 30m
+    stop_grace_period: 2m
+
+  # Modeling API + MCP (Phase B image): REST /v1 and MCP /mcp in one process, one enforcement
+  # library. Access mode comes from the manifest `access` block via the active generation;
+  # absent = open mode (strongly advised against; every response is marked).
+  api:
+    build:
+      context: ../..
+      dockerfile: api/Dockerfile
+    image: ns-core-api:${NS_CORE_VERSION:-dev}
+    restart: unless-stopped
+    depends_on:
+      runner:
+        condition: service_healthy
+    environment:
+      # Coolify: routes a generated domain (TLS via its proxy) to port 8080 of this service.
+      - SERVICE_URL_API_8080
+      - NS_CORE_PUBLIC_URL=${SERVICE_URL_API:-}
+      - NS_TENANT_ID=${NS_TENANT_ID:?set NS_TENANT_ID}
+      - NS_CORE_VERSION=${NS_CORE_VERSION:-dev}
+      - NS_LOG_LEVEL=${NS_LOG_LEVEL:-info}
+      - NS_STATE_DIR=/var/lib/ns-core/state
+      - NS_ARTIFACTS_DIR=/var/lib/ns-core/artifacts
+      # Warehouse: query-engine role (published schemas only) + API-state role (ns_core schema only).
+      # No superuser, loader, or transformer credential reaches this service.
+      - PG_HOST=postgres
+      - PG_PORT=5432
+      - PG_DATABASE=${PG_DATABASE:-narrowstack}
+      - MF_PG_PASSWORD=${SERVICE_PASSWORD_64_QUERY}
+      - API_RO_PG_PASSWORD=${SERVICE_PASSWORD_64_APISTATE}
+      # Access (front door and bouncer): token pepper is required once access.mode includes `token`.
+      - NS_CORE_TOKEN_PEPPER=${SERVICE_PASSWORD_64_TOKENPEPPER}
+      - NS_CORE_TOKEN_MAX_TTL_DAYS=${NS_CORE_TOKEN_MAX_TTL_DAYS:-90}
+      # OIDC access mode (stub until the chat edge lands): issuer + audience Core validates JWTs against.
+      - NS_CORE_OIDC_ISSUER=${NS_CORE_OIDC_ISSUER:-}
+      - NS_CORE_OIDC_AUDIENCE=${NS_CORE_OIDC_AUDIENCE:-}
+    expose:
+      - "8080"
+    volumes:
+      - artifacts:/var/lib/ns-core/artifacts:ro
+      - state:/var/lib/ns-core/state:ro
+    healthcheck:
+      # Ready = active generation loaded and the post-load ACL self-test passed.
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/readyz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
 volumes:
   pgdata:
+  semantics:
+  artifacts:
+  state:
